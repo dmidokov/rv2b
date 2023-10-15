@@ -13,7 +13,6 @@ func (s *Service) AuthCheck(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//session, _ := s.CookieStore.Get(r, s.Config.SessionsSecret)
 	fn := "api.authCheck"
 
 	contextLogger := s.Logger.WithFields(logrus.Fields{
