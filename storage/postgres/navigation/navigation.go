@@ -2,6 +2,7 @@ package navigation
 
 import (
 	"context"
+	e "github.com/dmidokov/rv2/entitie"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/sirupsen/logrus"
@@ -14,15 +15,6 @@ type Service struct {
 	Log         *logrus.Logger
 }
 
-type Navigation struct {
-	Id      int    `json:"id"`
-	Title   string `json:"title"`
-	Tooltip string `json:"tooltip"`
-	Group   int    `json:"group"`
-	Icon    string `json:"icon"`
-	Link    string `json:"link"`
-}
-
 type SessionStorage interface {
 	Get(r *http.Request, key string) (interface{}, bool)
 }
@@ -33,7 +25,7 @@ func New(DB *pgxpool.Pool, CookieStore SessionStorage, Log *logrus.Logger) *Serv
 	}
 }
 
-func (o *Service) Get(userId int) ([]*Navigation, error) {
+func (o *Service) Get(userId int) ([]*e.Navigation, error) {
 
 	query := `
 			SELECT 
@@ -60,10 +52,10 @@ func (o *Service) Get(userId int) ([]*Navigation, error) {
 
 }
 
-func scanRows(rows pgx.Rows) ([]*Navigation, error) {
-	var result []*Navigation
+func scanRows(rows pgx.Rows) ([]*e.Navigation, error) {
+	var result []*e.Navigation
 	for rows.Next() {
-		item := &Navigation{}
+		item := &e.Navigation{}
 		err := rows.Scan(&item.Id, &item.Title, &item.Tooltip, &item.Group, &item.Icon, &item.Link)
 		if err != nil {
 			return nil, err

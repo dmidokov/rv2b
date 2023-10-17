@@ -4,11 +4,13 @@ import (
 	"github.com/dmidokov/rv2/config"
 	"github.com/dmidokov/rv2/handlers/auth"
 	branchH "github.com/dmidokov/rv2/handlers/branch"
+	navigationH "github.com/dmidokov/rv2/handlers/navigation"
 	orgH "github.com/dmidokov/rv2/handlers/organization"
 	userH "github.com/dmidokov/rv2/handlers/user"
 	"github.com/dmidokov/rv2/response"
 	"github.com/dmidokov/rv2/sse"
 	branchS "github.com/dmidokov/rv2/storage/postgres/branch"
+	navigationS "github.com/dmidokov/rv2/storage/postgres/navigation"
 	orgS "github.com/dmidokov/rv2/storage/postgres/organization"
 	"github.com/dmidokov/rv2/storage/postgres/user"
 	"github.com/gorilla/mux"
@@ -51,10 +53,12 @@ func (hm *Service) Router() (*mux.Router, error) {
 	orgHandler := orgH.New(hm.Logger, hm.DB, hm.Config)
 	branchHandler := branchH.New(hm.Logger, hm.DB, hm.Config)
 	userHandler := userH.New(hm.Logger, hm.DB, hm.Config)
+	navigationHandler := navigationH.New(hm.Logger, hm.DB, hm.Config)
 
 	userService := user.New(hm.DB, hm.CookieStore, hm.Logger)
 	orgService := orgS.New(hm.DB, hm.CookieStore, hm.Logger)
 	branchService := branchS.New(hm.DB, hm.CookieStore, hm.Logger)
+	navigationService := navigationS.New(hm.DB, hm.CookieStore, hm.Logger)
 
 	router := mux.NewRouter()
 
@@ -66,7 +70,7 @@ func (hm *Service) Router() (*mux.Router, error) {
 
 	router.HandleFunc("/api/authcheck", authHandler.AuthCheck).Methods(http.MethodGet, http.MethodOptions)
 
-	router.HandleFunc("/api/navigation", hm.loggingMiddleware(hm.GetNavigation)).Methods(http.MethodGet, http.MethodOptions)
+	router.HandleFunc("/api/navigation", hm.loggingMiddleware(navigationHandler.GetNavigation(userService, navigationService))).Methods(http.MethodGet, http.MethodOptions)
 
 	router.HandleFunc("/api/organizations", hm.loggingMiddleware(orgHandler.Get(orgService, userService))).Methods(http.MethodGet, http.MethodOptions)
 	router.HandleFunc("/api/organizations", hm.loggingMiddleware(orgHandler.Create(orgService, userService))).Methods(http.MethodPut, http.MethodOptions)
