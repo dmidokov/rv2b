@@ -5,15 +5,15 @@ import (
 	"github.com/dmidokov/rv2/handlers/auth"
 	branchH "github.com/dmidokov/rv2/handlers/branch"
 	orgH "github.com/dmidokov/rv2/handlers/organization"
+	userH "github.com/dmidokov/rv2/handlers/user"
 	"github.com/dmidokov/rv2/response"
 	"github.com/dmidokov/rv2/sse"
 	branchS "github.com/dmidokov/rv2/storage/postgres/branch"
 	orgS "github.com/dmidokov/rv2/storage/postgres/organization"
-	"github.com/dmidokov/rv2/users"
+	"github.com/dmidokov/rv2/storage/postgres/user"
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/sirupsen/logrus"
-	"log"
 	"net/http"
 	"strconv"
 )
@@ -50,8 +50,9 @@ func (hm *Service) Router() (*mux.Router, error) {
 	authHandler := auth.New(hm.Logger, hm.DB, hm.CookieStore, hm.Config)
 	orgHandler := orgH.New(hm.Logger, hm.DB, hm.Config)
 	branchHandler := branchH.New(hm.Logger, hm.DB, hm.Config)
+	userHandler := userH.New(hm.Logger, hm.DB, hm.Config)
 
-	userService := users.New(hm.DB, hm.CookieStore, hm.Logger)
+	userService := user.New(hm.DB, hm.CookieStore, hm.Logger)
 	orgService := orgS.New(hm.DB, hm.CookieStore, hm.Logger)
 	branchService := branchS.New(hm.DB, hm.CookieStore, hm.Logger)
 
@@ -76,9 +77,9 @@ func (hm *Service) Router() (*mux.Router, error) {
 	router.HandleFunc("/api/branches", hm.loggingMiddleware(branchHandler.Get(branchService, userService))).Methods(http.MethodGet, http.MethodOptions)
 	router.HandleFunc("/api/branches", hm.loggingMiddleware(branchHandler.Create(branchService, userService))).Methods(http.MethodPut, http.MethodOptions)
 
-	router.HandleFunc("/api/users", hm.loggingMiddleware(hm.GetUsers)).Methods(http.MethodGet, http.MethodOptions)
-	router.HandleFunc("/api/users", hm.loggingMiddleware(hm.Create)).Methods(http.MethodPut, http.MethodOptions)
-	router.HandleFunc("/api/users/{id}", hm.loggingMiddleware(hm.DeleteUser)).Methods(http.MethodDelete, http.MethodOptions)
+	router.HandleFunc("/api/users", hm.loggingMiddleware(userHandler.GetUsers(userService))).Methods(http.MethodGet, http.MethodOptions)
+	router.HandleFunc("/api/users", hm.loggingMiddleware(userHandler.Create(userService))).Methods(http.MethodPut, http.MethodOptions)
+	router.HandleFunc("/api/users/{id}", hm.loggingMiddleware(userHandler.DeleteUser(userService))).Methods(http.MethodDelete, http.MethodOptions)
 
 	router.HandleFunc("/sse/{folder}", hm.sseHandler())
 	router.HandleFunc("/send/{event}/{client}", hm.sendMessage())
@@ -100,15 +101,9 @@ func (hm *Service) loggingMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		method := "Login middleware"
 		log := hm.Logger
 
-		//session, err := hm.CookieStore.Get(r, hm.Config.SessionsSecret)
 		responses := resp.Service{Writer: &w, Logger: log, Operation: method}
 
-		//if err != nil {
-		//	log.Error(err.Error())
-		//	responses.InternalServerError()
-		//}
-
-		if auth, ok := hm.CookieStore.Get(r, "authenticated"); ok && auth.(bool) {
+		if authenticated, ok := hm.CookieStore.Get(r, "authenticated"); ok && authenticated.(bool) {
 			hm.CookieStore.Save(r, w, make(map[string]interface{}))
 			if r.URL.String() == "/" {
 				w.Header().Set("cache-control", "no-cache")
@@ -141,27 +136,19 @@ func (hm *Service) handleFileServer(dir, prefix string) http.HandlerFunc {
 	fs := http.FileServer(http.Dir(dir))
 	realHandler := http.StripPrefix(prefix, fs).ServeHTTP
 	return func(w http.ResponseWriter, req *http.Request) {
-		//setCorsHeaders(&w, req)
 		realHandler(w, req)
 	}
 }
 
 func (hm *Service) sendMessage() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		//eventChanel := hm.Config.EventChanel
 		vars := mux.Vars(r)
 
 		event := vars["event"]
 		client, _ := strconv.Atoi(vars["client"])
 
 		if hm.SSE.Chanel != nil {
-			log.Printf("print message to client")
-			log.Printf(event)
-			log.Print(client)
-
-			// send the message through the available channel
 			hm.SSE.Chanel <- sse.Event{Name: sse.EventName(event), Value: "data: bye-bye\n\n", UserId: client}
-			//eventChanel <- config.SSEEvent{Name: event, Value: "event: bye\ndata: bye-bye\n\n", UserId: client}
 		}
 
 	}

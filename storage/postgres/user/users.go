@@ -1,4 +1,4 @@
-package users
+package user
 
 import (
 	"context"
@@ -82,7 +82,6 @@ func (u *Service) GetByOrganizationId(orgId int) ([]*e.UserShort, error) {
 // GetUserIdFromSession возвращает айди клиента в сессии или ноль
 func (u *Service) GetUserIdFromSession(r *http.Request) int {
 	log := u.Log
-	//session, _ := u.CookieStore.Get(r, sessionSecret)
 
 	if auth, ok := u.CookieStore.Get(r, "authenticated"); !ok || !auth.(bool) {
 		log.Warning("User is not authorized")
@@ -107,7 +106,6 @@ func (u *Service) IsAuthorized(r *http.Request) bool {
 // GetOrganizationIdFromSession возвращает айди организации клиента в сессии или ноль
 func (u *Service) GetOrganizationIdFromSession(r *http.Request) int {
 	log := u.Log
-	//session, _ := u.CookieStore.Get(r, sessionSecret)
 
 	if auth, ok := u.CookieStore.Get(r, "authenticated"); !ok || !auth.(bool) {
 		log.Warning("User is not authorized")

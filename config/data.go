@@ -34,8 +34,6 @@ type Configuration struct {
 	MODE                    string `json:"MODE,omitempty"`
 	RootPathWeb             string `json:"ROOT_PATH_WEB,omitempty"`
 	SessionMaxAge           int    `json:"SESSION_MAX_AGE,omitempty"`
-	//EventChanel             chan SSEEvent             `json:"event_chanel"`
-	//Clients                 map[string]map[int]Client `json:"clients"`
-	Salt         string `json:"salt"`
-	PasswordCost int    `json:"password_cost"`
+	Salt                    string `json:"salt"`
+	PasswordCost            int    `json:"password_cost"`
 }

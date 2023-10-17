@@ -5,7 +5,7 @@ import (
 	e "github.com/dmidokov/rv2/entitie"
 	resp "github.com/dmidokov/rv2/response"
 	"github.com/dmidokov/rv2/rights"
-	"github.com/dmidokov/rv2/users"
+	"github.com/dmidokov/rv2/storage/postgres/user"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"strings"
@@ -41,7 +41,7 @@ func (s *Service) Create(orgCreator OrgCreator, userProvider UserProvider) http.
 			return
 		}
 
-		log := *s.Logger
+		log := s.Logger
 		method := "api.organizations.add"
 		response := resp.Service{Writer: &w, Logger: s.Logger, Operation: method}
 
@@ -90,7 +90,7 @@ func (s *Service) Create(orgCreator OrgCreator, userProvider UserProvider) http.
 			UserName:       strings.Trim(userData.Name, " "),
 			Password:       string(hashedPassword),
 			OrganizationId: currentUserOrganizationId,
-			Rights:         users.DefaultUserRights,
+			Rights:         user.DefaultUserRights,
 			CreateTime:     time.Now().Unix(),
 			UpdateTime:     time.Now().Unix(),
 		}

@@ -1,8 +1,6 @@
 package rights
 
-type Service struct {
-	//Log *logrus.Logger
-}
+type Service struct{}
 
 const (
 	AddUser = 1 << (iota)
@@ -10,7 +8,7 @@ const (
 	DeleteUser
 	AddOrganization
 	EditOrganization
-	DeleteOrganization
+	DeleteOrganization // todo: добавить проверку этого права при удалении
 	ViewOrganization
 	ViewBranchList
 	AddBranch

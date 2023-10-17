@@ -20,7 +20,6 @@ type ErrorResponse struct {
 
 type OKResponse struct {
 	Status string `json:"status"`
-	//Errors []string `json:"errors"`
 }
 
 type OKWithDataResponse struct {

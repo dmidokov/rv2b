@@ -3,7 +3,7 @@ package handlers
 import (
 	"github.com/dmidokov/rv2/navigation"
 	"github.com/dmidokov/rv2/response"
-	"github.com/dmidokov/rv2/users"
+	"github.com/dmidokov/rv2/storage/postgres/user"
 	"net/http"
 )
 
@@ -12,12 +12,12 @@ func (hm *Service) GetNavigation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log := *hm.Logger
+	log := hm.Logger
 	method := "api.navigation.get"
 	response := resp.Service{Writer: &w, Logger: hm.Logger, Operation: method}
 
 	navigationService := navigation.Service{DB: hm.DB, CookieStore: hm.CookieStore, Log: hm.Logger}
-	userService := users.Service{DB: hm.DB, CookieStore: hm.CookieStore, Log: hm.Logger}
+	userService := user.Service{DB: hm.DB, CookieStore: hm.CookieStore, Log: hm.Logger}
 
 	userId := userService.GetUserIdFromSession(r)
 	if userId == 0 {

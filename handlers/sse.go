@@ -17,12 +17,6 @@ func (hm *Service) sseHandler() http.HandlerFunc {
 		log := hm.Logger
 		responses := resp.Service{Writer: &w, Logger: log, Operation: "sse.sseHandler"}
 
-		//session, err := hm.CookieStore.Get(r, hm.Config.SessionsSecret)
-		//if err != nil {
-		//	log.Error(err.Error())
-		//	responses.InternalServerError()
-		//}
-
 		if auth, ok := hm.CookieStore.Get(r, "authenticated"); !ok || !auth.(bool) {
 			log.Warning("User is not authorized")
 			responses.Unauthorized()

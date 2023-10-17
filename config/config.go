@@ -22,93 +22,75 @@ func LoadConfig() *Configuration {
 
 	if config.DbUser, exist = os.LookupEnv(DbUser); !exist {
 		log.Fatalf("database  username is missing")
-		// return &Configuration{}, log.Fatal("database  username is missing")
 	}
 
 	if config.DbPassword, exist = os.LookupEnv(DbPassword); !exist {
 		log.Fatalf("database password is missing")
-		// return &Configuration{}, log.Fatal("database password is missing")
 	}
 
 	if config.DbHost, exist = os.LookupEnv(DbHost); !exist {
 		log.Fatal("database host is missing")
-		// return &Configuration{}, log.Fatal("database host is missing")
 	}
 
 	if config.DbPort, exist = os.LookupEnv(DbPort); !exist {
 		log.Fatal("database port is missing")
-		// return &Configuration{}, log.Fatal("database port is missing")
 	}
 
 	if config.DbName, exist = os.LookupEnv(DbName); !exist {
 		log.Fatal("database name is missing")
-		// return &Configuration{}, log.Fatal("database name is missing")
 	}
 
 	if config.RootPath, exist = os.LookupEnv(RootPath); !exist {
 		log.Fatal("application root path is empty")
-		// return &Configuration{}, log.Fatal("application root path is empty")
 	}
 
 	if config.AdminPassword, exist = os.LookupEnv(AdminPassword); !exist {
 		log.Fatal("admin password is missing")
-		// return &Configuration{}, log.Fatal("admin password is missing")
 	}
 
 	if config.SessionsSecret, exist = os.LookupEnv(SessionSecret); !exist {
 		log.Fatal("session secrec is empty")
-		// return &Configuration{}, log.Fatal("session secrec is empty")
 	}
 
 	if value, exist := os.LookupEnv(DeleteTablesBeforeStart); !exist {
 		log.Fatal("delete tables key is empty")
-		// return &Configuration{}, log.Fatal("delete tables key is empty")
 	} else {
 		config.DeleteTablesBeforeStart, err = strconv.Atoi(value)
 		if err != nil {
 			log.Fatal("delete tables key is wrong")
-			// return &Configuration{}, log.Fatal("delete tables key is wrong")
 		}
 	}
 
 	if config.MODE, exist = os.LookupEnv(MODE); !exist || !(config.MODE == "dev" || config.MODE == "production" || config.MODE == "mock") {
 		log.Fatal("MODE is not exist")
-		// return &Configuration{}, log.Fatal("MODE is not exist")
 	}
 
 	if config.RootPathWeb, exist = os.LookupEnv(RootPathWeb); !exist {
 		log.Fatal("application web root path is empty")
-		// return &Configuration{}, log.Fatal("application web root path is empty")
 	}
 
 	if value, exist := os.LookupEnv(SessionMaxAge); !exist {
 		config.SessionMaxAge = 3600
-		// return &Configuration{}, log.Fatal("application web root path is empty")
 	} else {
 		config.SessionMaxAge, err = strconv.Atoi(value)
 		if err != nil {
 			log.Fatal("session max age key is wrong")
-			// return &Configuration{}, log.Fatal("delete tables key is wrong")
 		}
 	}
 
 	if config.Salt, exist = os.LookupEnv(Salt); !exist {
 		log.Fatal("application web root path is empty")
-		// return &Configuration{}, log.Fatal("application web root path is empty")
 	}
 
 	if value, exist := os.LookupEnv(PasswordCost); !exist {
 		config.PasswordCost = 14
 		log.Fatal("application web root path is empty")
-		// return &Configuration{}, log.Fatal("application web root path is empty")
 	} else {
 		config.PasswordCost, err = strconv.Atoi(value)
 		if err != nil {
 			log.Fatal("password cost key is wrong")
-			// return &Configuration{}, log.Fatal("delete tables key is wrong")
 		}
 	}
 
-	// Возвращаем конфиг если не вышли ранее с ошибкой
 	return &config
 }

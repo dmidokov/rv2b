@@ -7,13 +7,6 @@ import (
 
 func (hm *Service) GetSessionUserId(r *http.Request) (int, error) {
 
-	//log := hm.Logger
-
-	//session, err := hm.CookieStore.Get(r, hm.Config.SessionsSecret)
-	//if err != nil {
-	//	log.Error(err.Error())
-	//	return -1, err
-	//}
 	if auth, ok := hm.CookieStore.Get(r, "authenticated"); ok && auth.(bool) {
 
 		if userId, ok := hm.CookieStore.Get(r, "userid"); ok {
@@ -27,13 +20,6 @@ func (hm *Service) GetSessionUserId(r *http.Request) (int, error) {
 
 func (hm *Service) GetSessionOrganizationId(r *http.Request) (int, error) {
 
-	//log := hm.Logger
-
-	//session, err := hm.CookieStore.Get(r, hm.Config.SessionsSecret)
-	//if err != nil {
-	//	log.Error(err.Error())
-	//	return -1, err
-	//}
 	if auth, ok := hm.CookieStore.Get(r, "authenticated"); ok && auth.(bool) {
 
 		if orgId, ok := hm.CookieStore.Get(r, "organizationid"); ok {

@@ -10,13 +10,6 @@ import (
 func (s *Service) Logout(w http.ResponseWriter, r *http.Request) {
 	fn := "api.logout"
 
-	//session, _ := s.CookieStore.Get(r, s.Config.SessionsSecret)
-	//session.Values["authenticated"] = false
-	//session.Values["userid"] = nil
-	//session.Values["organizationid"] = nil
-	//session.Options.MaxAge = -1
-	//err := session.Save(r, w)
-
 	var savingParams = make(map[string]interface{}, 3)
 
 	savingParams["authenticated"] = false
@@ -31,7 +24,7 @@ func (s *Service) Logout(w http.ResponseWriter, r *http.Request) {
 	if !err {
 		contextLogger.Errorf("Ошибка сохранения сессии при логауте")
 
-		json.NewEncoder(w).Encode(
+		_ = json.NewEncoder(w).Encode(
 			resp.Error("SessionSaveError"))
 
 		return
