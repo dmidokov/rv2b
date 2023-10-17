@@ -1,7 +1,7 @@
 INSERT INTO remonttiv2.users
 (user_id, organization_id, user_name, user_password, actions_code, rights_1, create_time, update_time)
 VALUES (1, 1, 'admin', '$2a$14$adZQlMqeE3qgAgGv.25PhuREomuM.zjCVIrLdoEUCpruv5g6DKEUi', 0, 64 | 4 | 1, 0, 0),
-       (2, 2, 'remontti', '$2a$14$EA3./8raO12dFE6tj/6C4evQIig3AlVRDkFuVsQJiJsAjWX7PAw2.', 0, 0, 1697057352,
+       (2, 2, 'remontti', '$2a$14$EA3./8raO12dFE6tj/6C4evQIig3AlVRDkFuVsQJiJsAjWX7PAw2.', 0, 128 | 256, 1697057352,
         1697057352);
 
 INSERT INTO remonttiv2.organizations
@@ -30,10 +30,10 @@ VALUES (1, 1, 1),
        (1, 3, 1),
        (1, 5, 1),
        (1, 6, 1),
-       (11, 2, 1),
-       (10, 2, 1),
-       (10, 5, 1),
-       (11, 4, 1);
+       (2, 2, 1),
+       (2, 5, 1),
+       (2, 3, 1);
+
 
 INSERT INTO remonttiv2.rights_names
     (name, value)
@@ -43,7 +43,9 @@ VALUES ('ADD_USER', pow(2, 0)),
        ('ADD_ORGANIZATION', pow(2, 3)),
        ('EDIT_ORGANIZATION', pow(2, 4)),
        ('DELETE_ORGANIZATION', pow(2, 5)),
-       ('VIEW_ORGANIZATION_LIST', pow(2, 6));
+       ('VIEW_ORGANIZATION_LIST', pow(2, 6)),
+       ('VIEW_BRANCH_LIST', pow(2, 7)),
+       ('CREATE_BRANCH_LIST', pow(2, 8));
 
 INSERT INTO remonttiv2.branches
 (branch_id, organization_id, branch_name, address, phone, work_time, create_time, update_time)

@@ -3,9 +3,11 @@ package handlers
 import (
 	"github.com/dmidokov/rv2/config"
 	"github.com/dmidokov/rv2/handlers/auth"
+	branchH "github.com/dmidokov/rv2/handlers/branch"
 	orgH "github.com/dmidokov/rv2/handlers/organization"
 	"github.com/dmidokov/rv2/response"
 	"github.com/dmidokov/rv2/sse"
+	branchS "github.com/dmidokov/rv2/storage/postgres/branch"
 	orgS "github.com/dmidokov/rv2/storage/postgres/organization"
 	"github.com/dmidokov/rv2/users"
 	"github.com/gorilla/mux"
@@ -47,9 +49,11 @@ func (hm *Service) Router() (*mux.Router, error) {
 
 	authHandler := auth.New(hm.Logger, hm.DB, hm.CookieStore, hm.Config)
 	orgHandler := orgH.New(hm.Logger, hm.DB, hm.Config)
+	branchHandler := branchH.New(hm.Logger, hm.DB, hm.Config)
 
 	userService := users.New(hm.DB, hm.CookieStore, hm.Logger)
 	orgService := orgS.New(hm.DB, hm.CookieStore, hm.Logger)
+	branchService := branchS.New(hm.DB, hm.CookieStore, hm.Logger)
 
 	router := mux.NewRouter()
 
@@ -68,6 +72,9 @@ func (hm *Service) Router() (*mux.Router, error) {
 	router.HandleFunc("/api/organizations/{id}", hm.loggingMiddleware(orgHandler.DeleteOrganization(orgService))).Methods(http.MethodDelete, http.MethodOptions)
 	router.HandleFunc("/api/organizations/{id}", orgHandler.GetById(orgService, userService)).Methods(http.MethodGet, http.MethodOptions)
 	router.HandleFunc("/api/organizations/current", orgHandler.GetById(orgService, userService)).Methods(http.MethodGet, http.MethodOptions)
+
+	router.HandleFunc("/api/branches", hm.loggingMiddleware(branchHandler.Get(branchService, userService))).Methods(http.MethodGet, http.MethodOptions)
+	router.HandleFunc("/api/branches", hm.loggingMiddleware(branchHandler.Create(branchService, userService))).Methods(http.MethodPut, http.MethodOptions)
 
 	router.HandleFunc("/api/users", hm.loggingMiddleware(hm.GetUsers)).Methods(http.MethodGet, http.MethodOptions)
 	router.HandleFunc("/api/users", hm.loggingMiddleware(hm.Create)).Methods(http.MethodPut, http.MethodOptions)

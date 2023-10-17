@@ -12,6 +12,8 @@ const (
 	EditOrganization
 	DeleteOrganization
 	ViewOrganization
+	ViewBranchList
+	AddBranch
 )
 
 func New() *Service {

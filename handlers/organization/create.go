@@ -12,6 +12,13 @@ import (
 	"time"
 )
 
+type CreateOrganizationRequest struct {
+	Name     string `json:"name"`
+	Host     string `json:"host"`
+	UserName string `json:"user-name"`
+	UserPass string `json:"user-pass"`
+}
+
 type OrgCreator interface {
 	Create(org *e.Organization) (*e.Organization, error)
 }
@@ -20,6 +27,7 @@ type UserProvider interface {
 	Create(user *e.User) error
 	GetOrganizationIdFromSession(r *http.Request) int
 	GetUserIdFromSession(r *http.Request) int
+	GetById(userId int) (*e.User, error)
 }
 
 type CreateUserRequest struct {
@@ -87,7 +95,13 @@ func (s *Service) Create(orgCreator OrgCreator, userProvider UserProvider) http.
 			UpdateTime:     time.Now().Unix(),
 		}
 
-		if rightsService.CheckUserRight(currentUserId, rights.AddUser&rights.AddOrganization) {
+		currentUser, err := userProvider.GetById(currentUserId)
+		if err != nil {
+			response.InternalServerError()
+			return
+		}
+
+		if rightsService.CheckUserRight(currentUser.Rights, rights.AddUser&rights.AddOrganization) {
 
 			createdOrganization, err := orgCreator.Create(newOrganization)
 			if err != nil {

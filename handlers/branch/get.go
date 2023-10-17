@@ -1,37 +1,26 @@
-package organization
+package branch
 
 import (
 	e "github.com/dmidokov/rv2/entitie"
-	"github.com/dmidokov/rv2/response"
+	resp "github.com/dmidokov/rv2/response"
 	"github.com/dmidokov/rv2/rights"
 	"github.com/sirupsen/logrus"
 	"net/http"
 )
 
-type ShortResponse struct {
-	Name string `json:"name"`
-	Host string `json:"host"`
+type branchGetter interface {
+	GetAll() ([]*e.Branch, error)
 }
 
-type OrgGetter interface {
-	GetAll() ([]*e.Organization, error)
-}
-
-type userProvider interface {
-	GetById(userId int) (*e.User, error)
-	GetOrganizationIdFromSession(r *http.Request) int
-	GetUserIdFromSession(r *http.Request) int
-}
-
-// Get возвращает список организаций с проверкой права по просмотр организаций
-func (s *Service) Get(orgProvider OrgGetter, userProvider userProvider) http.HandlerFunc {
+// Get возвращает список филиалов с проверкой права по просмотр
+func (s *Service) Get(branchGetter branchGetter, userProvider userProvider) http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodOptions {
 			return
 		}
 
-		fn := "api.organizations.get"
+		fn := "api.branches.get"
 		contextLogger := s.Logger.WithFields(logrus.Fields{
 			"fn": fn,
 		})
@@ -52,15 +41,16 @@ func (s *Service) Get(orgProvider OrgGetter, userProvider userProvider) http.Han
 			return
 		}
 
-		if !rights.New().CheckUserRight(currentUser.Rights, rights.ViewOrganization) {
+		if !rights.New().CheckUserRight(currentUser.Rights, rights.ViewBranchList) {
 			contextLogger.Warning("Недостаточно прав")
 			response.NotAllowed()
 			return
 		}
 
-		items, err := orgProvider.GetAll()
+		items, err := branchGetter.GetAll()
+
 		if err != nil {
-			contextLogger.Errorf("Не удалось получить список организаций: Error: %s", err.Error())
+			contextLogger.Errorf("Не удалось получить список филиалов: Error: %s", err.Error())
 
 			response.InternalServerError()
 			return
