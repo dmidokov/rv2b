@@ -96,3 +96,17 @@ func (o *Service) GetByNameAndOrgId(name string, orgId int) (*e.Branch, error) {
 
 	return branch, nil
 }
+
+func (o *Service) Delete(branchId int, orgId int) error {
+	query := `
+		DELETE FROM remonttiv2.branches 
+		WHERE branch_id=$1 and organization_id=$2`
+
+	tag, err := o.DB.Exec(context.Background(), query, branchId, orgId)
+	if err != nil {
+		return err
+	}
+	logrus.Info("Branches deleted: ", tag.RowsAffected())
+
+	return nil
+}

@@ -27,7 +27,6 @@ func (s *Service) Save(r *http.Request, w http.ResponseWriter, data map[string]i
 	for k, v := range data {
 		session.Values[k] = v
 	}
-
 	err := session.Save(r, w)
 
 	if err != nil {

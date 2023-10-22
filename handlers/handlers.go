@@ -31,6 +31,7 @@ type Service struct {
 type SessionStorage interface {
 	Save(r *http.Request, w http.ResponseWriter, data map[string]interface{}) bool
 	Get(r *http.Request, key string) (interface{}, bool)
+	SetMaxAge(maxAge int)
 }
 
 func New(db *pgxpool.Pool, cfg *config.Configuration, sessionStore SessionStorage, log *logrus.Logger, sse *sse.EventService) *Service {
@@ -80,6 +81,7 @@ func (hm *Service) Router() (*mux.Router, error) {
 
 	router.HandleFunc("/api/branches", hm.loggingMiddleware(branchHandler.Get(branchService, userService))).Methods(http.MethodGet, http.MethodOptions)
 	router.HandleFunc("/api/branches", hm.loggingMiddleware(branchHandler.Create(branchService, userService))).Methods(http.MethodPut, http.MethodOptions)
+	router.HandleFunc("/api/branches/{id}", hm.loggingMiddleware(branchHandler.DeleteBranch(branchService, userService))).Methods(http.MethodDelete, http.MethodOptions)
 
 	router.HandleFunc("/api/users", hm.loggingMiddleware(userHandler.GetUsers(userService))).Methods(http.MethodGet, http.MethodOptions)
 	router.HandleFunc("/api/users", hm.loggingMiddleware(userHandler.Create(userService))).Methods(http.MethodPut, http.MethodOptions)

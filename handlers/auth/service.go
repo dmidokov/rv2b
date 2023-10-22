@@ -17,6 +17,7 @@ type Service struct {
 type SessionStorage interface {
 	Save(r *http.Request, w http.ResponseWriter, data map[string]interface{}) bool
 	Get(r *http.Request, key string) (interface{}, bool)
+	SetMaxAge(maxAge int)
 }
 
 func New(Logger *logrus.Logger, DB *pgxpool.Pool, CookieStore SessionStorage, Config *config.Configuration) Service {

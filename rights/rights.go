@@ -12,6 +12,7 @@ const (
 	ViewOrganization
 	ViewBranchList
 	AddBranch
+	DeleteBranch
 )
 
 func New() *Service {

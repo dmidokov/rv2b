@@ -12,12 +12,13 @@ type DeleteProvider interface {
 }
 
 func (s *Service) DeleteOrganization(provider DeleteProvider) http.HandlerFunc {
+	//todo:: check user rights to org delete action
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodOptions {
 			return
 		}
 
-		log := *s.Logger
+		log := s.Logger
 		method := "api.organizations.delete"
 		response := resp.Service{Writer: &w, Logger: s.Logger, Operation: method}
 

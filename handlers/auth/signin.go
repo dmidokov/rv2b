@@ -136,6 +136,8 @@ func (s *Service) SignIn(userProvider UserProvider, organizationProvider Organiz
 		savingParams["authenticated"] = true
 		savingParams["userid"] = user.Id
 		savingParams["organizationid"] = foundOrganization.Id
+		s.CookieStore.SetMaxAge(s.Config.SessionMaxAge)
+
 		s.CookieStore.Save(r, w, savingParams)
 
 		if err != nil {
