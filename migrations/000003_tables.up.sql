@@ -5,10 +5,10 @@ VALUES (1, 1, 'admin', '$2a$14$adZQlMqeE3qgAgGv.25PhuREomuM.zjCVIrLdoEUCpruv5g6D
         1697057352);
 
 INSERT INTO remonttiv2.organizations
-    (organization_id, organization_name, host, create_time, update_time)
-VALUES (1, 'control', 'control.remontti.site', 0, 0),
-       (2, 'remontti', 'work.remontti.site', 1697057352, 1697057352),
-       (3, 'test', 'test.remontti.site', 0, 0);
+    (organization_id, organization_name, host, create_time, update_time, creator)
+VALUES (1, 'control', 'control.remontti.site', 0, 0, 1),
+       (2, 'remontti', 'work.remontti.site', 1697057352, 1697057352, 1),
+       (3, 'test', 'test.remontti.site', 0, 0, 1);
 
 INSERT INTO remonttiv2.navigation
     (navigation_id, title, tooltip_text, navigation_group, icon, link)

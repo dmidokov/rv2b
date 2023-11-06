@@ -20,7 +20,8 @@ var TablesStructSQL = `
 	    organization_name character varying(50) NOT NULL,
 	    host character varying(100) NOT NULL,
 		create_time integer NOT NULL,
-		update_time integer NOT NULL                             
+		update_time integer NOT NULL,
+		creator integer NOT NULL                           
 	)
 	TABLESPACE pg_default;
 
@@ -80,7 +81,7 @@ var TablesDataSQL = `
 	/* ORGANIZATIONS  */
 
 	INSERT INTO remonttiv2.organizations
-		(organization_id, organization_name, host, create_time, update_time) 
+		(organization_id, organization_name, host, create_time, update_time, creator) 
 	VALUES
 		(0, 'control', 'control.remontti.site', 0, 0); 
 

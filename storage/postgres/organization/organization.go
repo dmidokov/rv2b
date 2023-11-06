@@ -40,6 +40,7 @@ func (o *Service) GetByHostName(hostName string) (*e.Organization, error) {
 		&organization.Host,
 		&organization.CreateTime,
 		&organization.UpdateTime,
+		&organization.Creator,
 	)
 
 	if err != nil {
@@ -63,11 +64,11 @@ func (o *Service) GetAll() ([]*e.Organization, error) {
 func (o *Service) Create(org *e.Organization) (*e.Organization, error) {
 	query := `
 		INSERT INTO remonttiv2.organizations
-			(organization_name, host, create_time, update_time) 
+			(organization_name, host, create_time, update_time, creator) 
 		VALUES
-			($1, $2, $3, $3);`
+			($1, $2, $3, $3, $4);`
 
-	tag, err := o.DB.Exec(context.Background(), query, org.Name, org.Host, time.Now().Unix())
+	tag, err := o.DB.Exec(context.Background(), query, org.Name, org.Host, time.Now().Unix(), org.Creator)
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +86,7 @@ func scanRows(rows pgx.Rows) ([]*e.Organization, error) {
 	var result []*e.Organization
 	for rows.Next() {
 		item := &e.Organization{}
-		err := rows.Scan(&item.Id, &item.Name, &item.Host, &item.CreateTime, &item.UpdateTime)
+		err := rows.Scan(&item.Id, &item.Name, &item.Host, &item.CreateTime, &item.UpdateTime, &item.Creator)
 		if err != nil {
 			return nil, err
 		}
@@ -120,6 +121,7 @@ func (o *Service) GetById(id int) (*e.Organization, error) {
 		&organization.Host,
 		&organization.CreateTime,
 		&organization.UpdateTime,
+		&organization.Creator,
 	)
 
 	if err != nil {

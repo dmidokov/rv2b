@@ -101,6 +101,8 @@ func (s *Service) Create(orgCreator OrgCreator, userProvider UserProvider) http.
 			return
 		}
 
+		newOrganization.Creator = currentUserId
+
 		if rightsService.CheckUserRight(currentUser, rights.AddUser&rights.AddOrganization) {
 
 			createdOrganization, err := orgCreator.Create(newOrganization)
