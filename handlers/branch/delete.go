@@ -50,7 +50,7 @@ func (s *Service) DeleteBranch(branchProvider DeleteProvider, userProvider userP
 		}
 
 		rightsProvider := rights.New()
-		if rightsProvider.CheckUserRight(currentUser.Rights, rights.DeleteBranch) {
+		if rightsProvider.CheckUserRight(currentUser, rights.DeleteBranch) {
 			err = branchProvider.Delete(branchId, currentUser.OrganizationId)
 			if err != nil {
 				log.Errorf("Error: %s", err.Error())

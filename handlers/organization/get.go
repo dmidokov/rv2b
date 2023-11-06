@@ -52,7 +52,7 @@ func (s *Service) Get(orgProvider OrgGetter, userProvider userProvider) http.Han
 			return
 		}
 
-		if !rights.New().CheckUserRight(currentUser.Rights, rights.ViewOrganization) {
+		if !rights.New().CheckUserRight(currentUser, rights.ViewOrganization) {
 			contextLogger.Warning("Недостаточно прав")
 			response.NotAllowed()
 			return

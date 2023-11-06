@@ -54,7 +54,7 @@ func (s *Service) DeleteUser(userRemover userRemover) http.HandlerFunc {
 			return
 		}
 
-		if rightsService.CheckUserRight(currentUser.Rights, rights.DeleteUser) {
+		if rightsService.CheckUserRight(currentUser, rights.DeleteUser) {
 			err := userRemover.Delete(userId)
 			if err != nil {
 				log.Errorf("Error: %s", err.Error())

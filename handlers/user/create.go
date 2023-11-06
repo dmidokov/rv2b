@@ -82,7 +82,7 @@ func (s *Service) Create(userProvider userCreator) http.HandlerFunc {
 			UpdateTime:     time.Now().Unix(),
 		}
 
-		if rightsService.CheckUserRight(currentUser.Rights, rights.AddUser) {
+		if rightsService.CheckUserRight(currentUser, rights.AddUser) {
 			err := userProvider.Create(&newUser)
 			if err != nil {
 				log.Errorf("Error: %s", err.Error())

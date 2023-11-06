@@ -41,7 +41,7 @@ func (s *Service) Get(branchGetter branchGetter, userProvider userProvider) http
 			return
 		}
 
-		if !rights.New().CheckUserRight(currentUser.Rights, rights.ViewBranchList) {
+		if !rights.New().CheckUserRight(currentUser, rights.ViewBranchList) {
 			contextLogger.Warning("Недостаточно прав")
 			response.NotAllowed()
 			return

@@ -26,7 +26,7 @@ func (s *Service) Create(branchCreator branchCreator, userProvider userProvider)
 			return
 		}
 
-		log := *s.Logger
+		log := s.Logger
 		method := "api.organizations.add"
 		response := resp.Service{Writer: &w, Logger: s.Logger, Operation: method}
 
@@ -68,7 +68,7 @@ func (s *Service) Create(branchCreator branchCreator, userProvider userProvider)
 			return
 		}
 
-		if rightsService.CheckUserRight(currentUser.Rights, rights.AddBranch) {
+		if rightsService.CheckUserRight(currentUser, rights.AddBranch) {
 
 			_, err := branchCreator.Create(newBranch)
 			if err != nil {
