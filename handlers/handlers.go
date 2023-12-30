@@ -176,9 +176,6 @@ func (hm *Service) uploadImage() http.HandlerFunc {
 			return
 		}
 
-		log.Print(r.MultipartForm.Value)
-		log.Print(r.MultipartForm.File)
-
 		file, handler, err := r.FormFile("myFile")
 		if err != nil {
 			log.Error("Error Retrieving the File")
@@ -230,9 +227,6 @@ func (hm *Service) uploadImage() http.HandlerFunc {
 			return
 		}
 		log.Info(w, "Successfully Uploaded File\n")
-
-		log.Warning(isIcon)
-		log.Warning(r.Form.Encode())
 
 		if isIcon != "" {
 			userService := user.New(hm.DB, hm.CookieStore, hm.Logger)
