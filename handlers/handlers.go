@@ -91,12 +91,9 @@ func (hm *Service) Router() (*mux.Router, error) {
 	router.HandleFunc("/api/users", hm.loggingMiddleware(userHandler.GetUsers(userService))).Methods(http.MethodGet, http.MethodOptions)
 	router.HandleFunc("/api/users", hm.loggingMiddleware(userHandler.Create(userService))).Methods(http.MethodPut, http.MethodOptions)
 	router.HandleFunc("/api/users/{id}", hm.loggingMiddleware(userHandler.DeleteUser(userService))).Methods(http.MethodDelete, http.MethodOptions)
-	router.HandleFunc("/api/users/icon", hm.loggingMiddleware(userHandler.GetUserIcon(userService))).Methods(http.MethodGet, http.MethodOptions)
 
 	router.HandleFunc("/sse/{folder}", hm.sseHandler())
 	router.HandleFunc("/send/{event}/{client}", hm.sendMessage())
-
-	router.HandleFunc("/upload", hm.uploadImage()).Methods(http.MethodPost, http.MethodOptions)
 
 	if hm.Config.MODE == config.DEV {
 		router.Use(mux.CORSMethodMiddleware(router))
@@ -179,6 +176,9 @@ func (hm *Service) uploadImage() http.HandlerFunc {
 			return
 		}
 
+		log.Print(r.MultipartForm.Value)
+		log.Print(r.MultipartForm.File)
+
 		file, handler, err := r.FormFile("myFile")
 		if err != nil {
 			log.Error("Error Retrieving the File")
@@ -230,6 +230,9 @@ func (hm *Service) uploadImage() http.HandlerFunc {
 			return
 		}
 		log.Info(w, "Successfully Uploaded File\n")
+
+		log.Warning(isIcon)
+		log.Warning(r.Form.Encode())
 
 		if isIcon != "" {
 			userService := user.New(hm.DB, hm.CookieStore, hm.Logger)
