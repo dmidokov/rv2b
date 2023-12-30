@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"github.com/dmidokov/rv2/config"
 	"github.com/dmidokov/rv2/handlers/auth"
 	branchH "github.com/dmidokov/rv2/handlers/branch"
@@ -16,7 +17,11 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/sirupsen/logrus"
+	"io"
+	"mime/multipart"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 )
 
@@ -86,9 +91,12 @@ func (hm *Service) Router() (*mux.Router, error) {
 	router.HandleFunc("/api/users", hm.loggingMiddleware(userHandler.GetUsers(userService))).Methods(http.MethodGet, http.MethodOptions)
 	router.HandleFunc("/api/users", hm.loggingMiddleware(userHandler.Create(userService))).Methods(http.MethodPut, http.MethodOptions)
 	router.HandleFunc("/api/users/{id}", hm.loggingMiddleware(userHandler.DeleteUser(userService))).Methods(http.MethodDelete, http.MethodOptions)
+	router.HandleFunc("/api/users/icon", hm.loggingMiddleware(userHandler.GetUserIcon(userService))).Methods(http.MethodGet, http.MethodOptions)
 
 	router.HandleFunc("/sse/{folder}", hm.sseHandler())
 	router.HandleFunc("/send/{event}/{client}", hm.sendMessage())
+
+	router.HandleFunc("/upload", hm.uploadImage()).Methods(http.MethodPost, http.MethodOptions)
 
 	if hm.Config.MODE == config.DEV {
 		router.Use(mux.CORSMethodMiddleware(router))
@@ -157,5 +165,92 @@ func (hm *Service) sendMessage() http.HandlerFunc {
 			hm.SSE.Chanel <- sse.Event{Name: sse.EventName(event), Value: "data: bye-bye\n\n", UserId: client}
 		}
 
+	}
+}
+
+func (hm *Service) uploadImage() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		log := hm.Logger
+		log.Info("File uploading")
+		err := r.ParseMultipartForm(10 << 20)
+		if err != nil {
+			log.Error("Error form parsing")
+			log.Error(err)
+			return
+		}
+
+		file, handler, err := r.FormFile("myFile")
+		if err != nil {
+			log.Error("Error Retrieving the File")
+			log.Error(err)
+			return
+		}
+
+		isIcon := r.Form.Get("isIcon")
+
+		defer func(file multipart.File) {
+			err := file.Close()
+			if err != nil {
+				log.Error("Close file error")
+			}
+		}(file)
+
+		log.Info("Uploaded File: %+v\n", handler.Filename)
+		log.Info("File Size: %+v\n", handler.Size)
+		log.Info("MIME Header: %+v\n", handler.Header)
+
+		// Create a temporary file within our temp-images directory that follows
+		// a particular naming pattern
+
+		var tempFile *os.File
+
+		if isIcon != "" {
+			tempFile, err = os.CreateTemp("/bin/dist/icons", "upload-*.png")
+		} else {
+			tempFile, err = os.CreateTemp("/bin/temp-images", "upload-*.png")
+		}
+
+		if err != nil {
+			log.Error(err)
+		}
+		defer func(tempFile *os.File) {
+			err := tempFile.Close()
+			if err != nil {
+				log.Error("Close file error")
+			}
+		}(tempFile)
+
+		fileBytes, err := io.ReadAll(file)
+		if err != nil {
+			log.Error(err)
+		}
+
+		_, err = tempFile.Write(fileBytes)
+		if err != nil {
+			return
+		}
+		log.Info(w, "Successfully Uploaded File\n")
+
+		if isIcon != "" {
+			userService := user.New(hm.DB, hm.CookieStore, hm.Logger)
+			userService.GetUserIdFromSession(r)
+
+			currentUserId := userService.GetUserIdFromSession(r)
+			if currentUserId == 0 {
+				log.Warning("Пользователь не найден в сессии")
+				return
+			}
+
+			err := userService.SetIcon(currentUserId, "/icons/"+filepath.Base(tempFile.Name()))
+			if err != nil {
+				return
+			}
+		}
+		a := map[string]string{"image-name": filepath.Base(tempFile.Name())}
+
+		err = json.NewEncoder(w).Encode(a)
+		if err != nil {
+			log.Errorf("Encode result error %s", err.Error())
+		}
 	}
 }

@@ -18,6 +18,10 @@ const (
 	SessionMaxAge           = "SESSION_MAX_AGE"
 	Salt                    = "SALT"
 	PasswordCost            = "PASSWORD_COST"
+	HttpPort                = "HTTP_PORT"
+	SSLPort                 = "SSL_PORT"
+	MigrationPath           = "MIGRATION_PATH"
+	SecretsPath             = "SECRETS_PATH"
 )
 
 // Configuration Структура для хранения конфигруации
@@ -36,4 +40,8 @@ type Configuration struct {
 	SessionMaxAge           int    `json:"SESSION_MAX_AGE,omitempty"`
 	Salt                    string `json:"salt"`
 	PasswordCost            int    `json:"password_cost"`
+	HttpPort                string `json:"http_port"`
+	SSLPort                 string `json:"ssl_port"`
+	MigrationPath           string `json:"migration_path"`
+	SecretsPath             string `json:"secrets_path"`
 }

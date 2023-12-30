@@ -21,35 +21,39 @@ func main() {
 
 	cfg := config.LoadConfig()
 
-	log := setupLog(cfg)
+	logger := setupLog(cfg)
 
-	sse := setupSSE()
-	sse.Run()
+	eventService := setupSSE()
+	eventService.Run()
 
 	conn := connectDB(cfg)
 
 	if cfg.DeleteTablesBeforeStart == 1 {
-		db.DropSchema(conn)
+		logger.Info("Удаление схемы")
+		err := db.DropSchema(conn)
+		if err != nil {
+			logger.Fatal("Can't drop schema")
+		}
 	}
 
-	migrations.Init()
+	migrations.Init(cfg)
 
 	store := cookie.New(cfg.SessionsSecret)
 
-	handler := handlers.New(conn, cfg, store, log, sse)
+	handler := handlers.New(conn, cfg, store, logger, eventService)
 
 	router, err := handler.Router()
 
 	if err != nil {
-		log.Fatalf("Регистрация завершилась с ошибкой: %s", err)
+		logger.Fatalf("Регистрация завершилась с ошибкой: %s", err)
 	}
 
 	go func() {
-		log.Fatal(http.ListenAndServeTLS(":443", "secrets/server.crt", "secrets/server.key", router))
+		logger.Fatal(http.ListenAndServeTLS(":"+cfg.SSLPort, cfg.SecretsPath+"server.crt", cfg.SecretsPath+"server.key", router))
 	}()
 
 	go func() {
-		log.Fatal(http.ListenAndServe(":80", http.HandlerFunc(handlers.Redirect)))
+		logger.Fatal(http.ListenAndServe(":"+cfg.HttpPort, http.HandlerFunc(handlers.Redirect)))
 	}()
 
 	finish := make(chan bool)
@@ -58,11 +62,11 @@ func main() {
 
 func setupLog(cfg *config.Configuration) *logrus.Logger {
 
-	log := &logrus.Logger{}
+	logger := &logrus.Logger{}
 
 	switch cfg.MODE {
 	case config.DEV:
-		log = &logrus.Logger{
+		logger = &logrus.Logger{
 			Out: os.Stdout,
 			Formatter: &logrus.TextFormatter{
 				DisableColors: false,
@@ -73,7 +77,7 @@ func setupLog(cfg *config.Configuration) *logrus.Logger {
 		}
 	}
 
-	return log
+	return logger
 
 }
 

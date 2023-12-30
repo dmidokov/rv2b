@@ -38,16 +38,7 @@ func (u *Service) GetUserByLoginAndOrganization(login string, organizationId int
 
 	row := u.DB.QueryRow(context.Background(), query, login, organizationId)
 
-	err := row.Scan(
-		&user.Id,
-		&user.OrganizationId,
-		&user.UserName,
-		&user.Password,
-		&user.ActionCode,
-		&user.Rights,
-		&user.CreateTime,
-		&user.UpdateTime,
-	)
+	user, err := scanUser(row)
 
 	if err != nil {
 		u.Log.Error(err.Error())
@@ -154,16 +145,7 @@ func (u *Service) GetById(userId int) (*e.User, error) {
 
 	row := u.DB.QueryRow(context.Background(), query, userId)
 
-	err := row.Scan(
-		&user.Id,
-		&user.OrganizationId,
-		&user.UserName,
-		&user.Password,
-		&user.ActionCode,
-		&user.Rights,
-		&user.CreateTime,
-		&user.UpdateTime,
-	)
+	user, err := scanUser(row)
 
 	if err != nil {
 		u.Log.Error(err.Error())
@@ -185,6 +167,51 @@ func (u *Service) Create(user *e.User) error {
 		return err
 	}
 	u.Log.Info("Создано пользователей:", tag.RowsAffected())
+
+	return nil
+}
+
+func (u *Service) GetIcon(userId int) *e.UserIcon {
+	user, err := u.GetById(userId)
+	if err != nil {
+		return &e.UserIcon{ImageName: ""}
+	}
+
+	return &e.UserIcon{ImageName: user.Icon}
+}
+
+func scanUser(row pgx.Row) (*e.User, error) {
+	var user = &e.User{}
+
+	err := row.Scan(
+		&user.Id,
+		&user.OrganizationId,
+		&user.UserName,
+		&user.Password,
+		&user.ActionCode,
+		&user.Rights,
+		&user.CreateTime,
+		&user.UpdateTime,
+		&user.Icon,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
+
+}
+
+func (u *Service) SetIcon(userId int, iconLink string) error {
+
+	query := `
+UPDATE remonttiv2.users SET account_icon = $1 WHERE user_id = $2`
+
+	_, err := u.DB.Exec(context.Background(), query, iconLink, userId)
+	if err != nil {
+		logrus.Warning(err.Error())
+	}
 
 	return nil
 }

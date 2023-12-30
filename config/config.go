@@ -92,5 +92,21 @@ func LoadConfig() *Configuration {
 		}
 	}
 
+	if config.MigrationPath, exist = os.LookupEnv(MigrationPath); !exist {
+		log.Fatal("migration path is empty")
+	}
+
+	if config.HttpPort, exist = os.LookupEnv(HttpPort); !exist {
+		log.Fatal("http port is empty")
+	}
+
+	if config.SSLPort, exist = os.LookupEnv(SSLPort); !exist {
+		log.Fatal("ssl port is empty")
+	}
+
+	if config.SecretsPath, exist = os.LookupEnv(SecretsPath); !exist {
+		log.Fatal("secrets path is empty")
+	}
+
 	return &config
 }
