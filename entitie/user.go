@@ -9,6 +9,7 @@ type User struct {
 	Rights         int
 	CreateTime     int64
 	UpdateTime     int64
+	Icon           string
 }
 
 type UserShort struct {
@@ -16,4 +17,8 @@ type UserShort struct {
 	UserName   string `json:"userName,omitempty"`
 	CreateTime int    `json:"createTime"`
 	UpdateTime int    `json:"updateTime"`
+}
+
+type UserIcon struct {
+	ImageName string `json:"image-name"`
 }

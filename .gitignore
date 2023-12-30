@@ -1,4 +1,9 @@
-/.idea
 /secrets
-dockerfile
+/docker
+docker/dockerfile
 .env
+./main.go
+docker-compose.yml
+docker-compose-with-local-front.yml
+dockerfile
+.idea

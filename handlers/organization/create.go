@@ -6,6 +6,7 @@ import (
 	resp "github.com/dmidokov/rv2/response"
 	"github.com/dmidokov/rv2/rights"
 	"github.com/dmidokov/rv2/storage/postgres/user"
+	"github.com/jackc/pgx/v4"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"strings"
@@ -21,6 +22,7 @@ type CreateOrganizationRequest struct {
 
 type OrgCreator interface {
 	Create(org *e.Organization) (*e.Organization, error)
+	GetByHostName(hostName string) (*e.Organization, error)
 }
 
 type UserProvider interface {
@@ -33,6 +35,11 @@ type UserProvider interface {
 type CreateUserRequest struct {
 	Name     string `json:"name"`
 	Password string `json:"password"`
+}
+
+type CreateOKResponse struct {
+	resp.Response
+	Data e.Organization `json:"data"`
 }
 
 func (s *Service) Create(orgCreator OrgCreator, userProvider UserProvider) http.HandlerFunc {
@@ -58,6 +65,23 @@ func (s *Service) Create(orgCreator OrgCreator, userProvider UserProvider) http.
 		newOrganization := &e.Organization{
 			Name: strings.Trim(orgData.Name, " "),
 			Host: strings.Trim(orgData.Host, " "),
+		}
+
+		org, err := orgCreator.GetByHostName(newOrganization.Host)
+		if err != nil {
+			if err.Error() == pgx.ErrNoRows.Error() {
+				log.Warning("NO")
+			} else {
+				log.Errorf("Duplicate")
+				response.InternalServerError()
+				return
+			}
+		}
+
+		if org != nil {
+			log.Warning("Organization exist")
+			_ = json.NewEncoder(w).Encode(resp.Error("OrganizationIsAlreadyExist"))
+			return
 		}
 
 		userData := CreateUserRequest{}
@@ -121,12 +145,18 @@ func (s *Service) Create(orgCreator OrgCreator, userProvider UserProvider) http.
 				response.InternalServerError()
 				return
 			}
+
+			_ = json.NewEncoder(w).Encode(CreateOKResponse{
+				Response: resp.Response{
+					Status: resp.StatusOK,
+				},
+				Data: *createdOrganization,
+			})
 		} else {
 			log.Warningf("Method now allowed for user %d", currentUserId)
 			response.NotAllowed()
 			return
 		}
 
-		response.OK()
 	}
 }

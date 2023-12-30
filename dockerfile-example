@@ -1,0 +1,15 @@
+FROM golang:1.21.1 as builder
+WORKDIR /build
+COPY go.mod .
+COPY go.sum .
+RUN go mod download
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -o /build/main /build/main.go
+FROM ubuntu
+COPY --from=builder /build/main /bin/main
+COPY --from=builder /build/migrations /bin/migrations
+COPY --from=builder /build/secrets /bin/secrets
+COPY --from=builder /build/docker/dist /bin/dist
+RUN mkdir -p /bin/temp-images
+ENTRYPOINT ["/bin/main"]
+#CMD ["sh"]

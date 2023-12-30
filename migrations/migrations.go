@@ -3,16 +3,20 @@ package migrations
 import (
 	"database/sql"
 	"fmt"
+	"github.com/dmidokov/rv2/config"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
-const migrationsPath = "file://migrations/"
+func Init(cfg *config.Configuration) {
 
-func Init() {
+	s := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", cfg.DbUser, cfg.DbPassword, cfg.DbHost, cfg.DbPort, cfg.DbName)
 
-	db, _ := sql.Open("postgres", "postgres://remonttiuser:deltad2dt@127.0.0.1:5432/remonttiv2db?sslmode=disable")
+	fmt.Println("OLD::postgres://remonttiuser:deltad2dt@127.0.0.1:5432/remonttiv2db?sslmode=disable")
+	fmt.Println("NEW", s)
+
+	db, _ := sql.Open("postgres", s)
 
 	err := db.Ping()
 
@@ -22,19 +26,19 @@ func Init() {
 		fmt.Println("Ping is OK!")
 	}
 
-	err = migrateSQL(db, "postgres")
+	err = migrateSQL(db, "postgres", cfg.MigrationPath)
 
 	if err != nil {
-		panic(err)
+		panic(err.Error())
 	} else {
 		fmt.Println("Migration successfully finished.")
 	}
-	db.Close()
+	_ = db.Close()
 
 }
 
 // This function executes the migration scripts.
-func migrateSQL(db *sql.DB, driverName string) error {
+func migrateSQL(db *sql.DB, driverName string, migrationsPath string) error {
 	driver, _ := postgres.WithInstance(db, &postgres.Config{})
 	m, err := migrate.NewWithDatabaseInstance(
 		migrationsPath,

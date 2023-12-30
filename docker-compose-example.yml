@@ -1,0 +1,37 @@
+version: '3'
+services:
+  backend:
+    build: ./
+    image: rv2:latest
+    restart: always
+    container_name: rv2
+    environment:
+      DB_USER_NAME: db_user_name
+      DB_USER_PASSWORD: db_user_password
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: db_name
+      ROOT_PATH: /path/to/main/go
+      ADMIN_PASSWORD: password
+      SESSION_SECRET: sessions_secret_key
+      DELETE_TABLES_BEFORE_START: 0
+      MODE: dev
+      ROOT_PATH_WEB: path_to_dist_directory
+      SESSION_MAX_AGE: 3600
+      SALT: salt_string
+      PASSWORD_COST: 14
+    depends_on:
+      - postgres
+    ports:
+      - "80:80"
+      - "443:443"
+#  mongo:
+#    image: mongo
+  postgres:
+    container_name: postgresdocker-compose-with-local-front.yml
+    image: postgres
+    restart: always
+#    ports:
+#      - "5434:5432"
+    environment:
+      POSTGRES_PASSWORD: db_password
