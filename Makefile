@@ -3,8 +3,9 @@ include .env
 export
 all: build-and-run
 build-and-run:
-	/home/noname/go/go1.21.1/bin/go build ./main.go
-	./main
+	rm ./r
+	/home/noname/go/go1.21.1/bin/go build -o ./r ./main.go
+	./r
 build-compose:
 	docker-compose down
 	docker rmi rv2

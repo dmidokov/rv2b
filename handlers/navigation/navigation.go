@@ -1,7 +1,7 @@
 package navigation
 
 import (
-	e "github.com/dmidokov/rv2/entitie"
+	e "github.com/dmidokov/rv2/lib/entitie"
 	"github.com/dmidokov/rv2/response"
 	"net/http"
 )

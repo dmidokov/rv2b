@@ -1,9 +1,10 @@
 package organization
 
 import (
-	e "github.com/dmidokov/rv2/entitie"
+	"github.com/dmidokov/rv2/lib"
+	"github.com/dmidokov/rv2/lib/entitie"
 	"github.com/dmidokov/rv2/response"
-	"github.com/dmidokov/rv2/rights"
+	"github.com/dmidokov/rv2/storage/postgres/rights"
 	"github.com/sirupsen/logrus"
 	"net/http"
 )
@@ -14,11 +15,11 @@ type ShortResponse struct {
 }
 
 type OrgGetter interface {
-	GetAll() ([]*e.Organization, error)
+	GetAll() ([]*entitie.Organization, error)
 }
 
 type userProvider interface {
-	GetById(userId int) (*e.User, error)
+	GetById(userId int) (*entitie.User, error)
 	GetOrganizationIdFromSession(r *http.Request) int
 	GetUserIdFromSession(r *http.Request) int
 }
@@ -52,7 +53,7 @@ func (s *Service) Get(orgProvider OrgGetter, userProvider userProvider) http.Han
 			return
 		}
 
-		if !rights.New().CheckUserRight(currentUser, rights.ViewOrganization) {
+		if !rights.New(s.DB, s.Logger).CheckUserRight(currentUser, lib.ViewOrganization) {
 			contextLogger.Warning("Недостаточно прав")
 			response.NotAllowed()
 			return

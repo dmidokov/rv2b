@@ -2,7 +2,7 @@ package branch
 
 import (
 	"context"
-	e "github.com/dmidokov/rv2/entitie"
+	e "github.com/dmidokov/rv2/lib/entitie"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/sirupsen/logrus"
@@ -28,9 +28,11 @@ func New(DB *pgxpool.Pool, CookieStore SessionStorage, Log *logrus.Logger) *Serv
 	}
 }
 
-func (o *Service) GetAll() ([]*e.Branch, error) {
-	query := `select * from remonttiv2.branches`
-	rows, err := o.DB.Query(context.Background(), query)
+func (o *Service) GetAll(userId int) ([]*e.Branch, error) {
+	query := `select * from remonttiv2.branches where branch_id in (
+    select branch_id from remonttiv2.user_branches where user_id=$1
+    );`
+	rows, err := o.DB.Query(context.Background(), query, userId)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +54,7 @@ func scanRows(rows pgx.Rows) ([]*e.Branch, error) {
 	return result, nil
 }
 
-func (o *Service) Create(branch *e.Branch) (*e.Branch, error) {
+func (o *Service) Create(branch *e.Branch, userId int) (*e.Branch, error) {
 	query := `
 		INSERT INTO remonttiv2.branches
 			(branch_name, organization_id, address, phone, work_time, create_time, update_time) 
@@ -65,12 +67,21 @@ func (o *Service) Create(branch *e.Branch) (*e.Branch, error) {
 	}
 	logrus.Info(tag.RowsAffected())
 
-	organization, err := o.GetByNameAndOrgId(branch.Name, branch.OrgId)
+	newBranch, err := o.GetByNameAndOrgId(branch.Name, branch.OrgId)
 	if err != nil {
 		return nil, err
 	}
 
-	return organization, nil
+	query = `
+		INSERT INTO remonttiv2.user_branches (user_id, branch_id)
+	    VALUES ($1, $2);`
+
+	tag, err = o.DB.Exec(context.Background(), query, userId, newBranch.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	return newBranch, nil
 }
 
 func (o *Service) GetByNameAndOrgId(name string, orgId int) (*e.Branch, error) {
@@ -107,6 +118,11 @@ func (o *Service) Delete(branchId int, orgId int) error {
 		return err
 	}
 	logrus.Info("Branches deleted: ", tag.RowsAffected())
+
+	return nil
+}
+
+func (o *Service) SetActive() error {
 
 	return nil
 }

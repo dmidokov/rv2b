@@ -1,8 +1,7 @@
 package auth
 
 import (
-	"encoding/json"
-	resp "github.com/dmidokov/rv2/response"
+	"github.com/dmidokov/rv2/response"
 	"github.com/sirupsen/logrus"
 	"net/http"
 )
@@ -13,21 +12,22 @@ func (s *Service) AuthCheck(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fn := "api.authCheck"
+	fn := "api.AuthCheck"
 
 	contextLogger := s.Logger.WithFields(logrus.Fields{
 		"fn": fn,
 	})
 
+	response := resp.New(&w, s.Logger, fn)
+
 	if auth, ok := s.CookieStore.Get(r, "authenticated"); ok && auth.(bool) {
-		json.NewEncoder(w).Encode(
-			resp.OK())
+		response.OK()
 
 		return
 	} else {
 		contextLogger.Warning("User is not authorized")
-		json.NewEncoder(w).Encode(
-			resp.Error("UserUnauthorized"))
+		response.Unauthorized()
+
 		return
 	}
 }

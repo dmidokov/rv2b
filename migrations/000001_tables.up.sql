@@ -1,6 +1,9 @@
--- DROP SCHEMA remonttiv2 CASCADE;
+-- DROP SCHEMA IF EXISTS remonttiv2 CASCADE;
 CREATE SCHEMA IF NOT EXISTS remonttiv2;
 
+-- user_type
+--     0 - Сервисная/Управляющая учетка
+--     1 - Учетка сотрудников
 CREATE TABLE IF NOT EXISTS remonttiv2.users
 (
     user_id         SERIAL                 NOT NULL,
@@ -11,7 +14,9 @@ CREATE TABLE IF NOT EXISTS remonttiv2.users
     rights_1        integer                NOT NULL,
     create_time     integer                NOT NULL,
     update_time     integer                NOT NULL,
-    account_icon    character varying(100) DEFAULT '/icons/img.png',
+    account_icon    character varying(100) DEFAULT '/icons/account.svg',
+    user_type       integer                DEFAULT 0,
+    start_page      character varying(100) DEFAULT '/',
     PRIMARY KEY (user_id),
     UNIQUE (organization_id, user_name)
 )
@@ -75,12 +80,32 @@ CREATE TABLE IF NOT EXISTS remonttiv2.branches
 )
     TABLESPACE pg_default;
 
-INSERT INTO remonttiv2.users
-(user_id, organization_id, user_name, user_password, actions_code, rights_1, create_time, update_time, account_icon)
-VALUES (1, 1, 'admin', '$2a$14$adZQlMqeE3qgAgGv.25PhuREomuM.zjCVIrLdoEUCpruv5g6DKEUi', 0, 64 | 4 | 1, 0, 0, ''),
-       (2, 2, 'remontti', '$2a$14$EA3./8raO12dFE6tj/6C4evQIig3AlVRDkFuVsQJiJsAjWX7PAw2.', 0, 128 | 256 | 512,
-        1697057352,
-        1697057352, '');
+CREATE TABLE IF NOT EXISTS remonttiv2.user_branches
+(
+    user_id   integer NOT NULL,
+    branch_id integer NOT NULL
+)
+    TABLESPACE pg_default;
+
+CREATE TABLE IF NOT EXISTS remonttiv2.users_create_relations
+(
+    creator_id integer NOT NULL,
+    created_id integer NOT NULL
+)
+    TABLESPACE pg_default;
+
+INSERT INTO remonttiv2.users (user_id, organization_id, user_name, user_password, actions_code, rights_1, create_time,
+                              update_time, account_icon, user_type, start_page)
+VALUES (1, 1, 'admin', '$2a$14$adZQlMqeE3qgAgGv.25PhuREomuM.zjCVIrLdoEUCpruv5g6DKEUi', 0, 2147483647, 0, 0, '', 0, '/');
+INSERT INTO remonttiv2.users (user_id, organization_id, user_name, user_password, actions_code, rights_1, create_time,
+                              update_time, account_icon, user_type, start_page)
+VALUES (2, 2, 'remontti', '$2a$14$EA3./8raO12dFE6tj/6C4evQIig3AlVRDkFuVsQJiJsAjWX7PAw2.', 0, 901, 1697057352,
+        1697057352, '/icons/upload-2287900351.png', 0, '/');
+INSERT INTO remonttiv2.users (user_id, organization_id, user_name, user_password, actions_code, rights_1, create_time,
+                              update_time, account_icon, user_type, start_page)
+VALUES (3, 2, 'employee', '$2a$14$NorbQj63.CseGzjcLs4p9.8zFIDusG/ZIAMMua9j3RV1aSvDjfj26', 0, 128, 1704540255,
+        1704540255,
+        '/icons/img.png', 0, '#/branchselector');
 
 INSERT INTO remonttiv2.organizations
 (organization_id, organization_name, host, create_time, update_time, creator)
@@ -110,6 +135,7 @@ VALUES (1, 1, 1),
        (1, 6, 1),
        (1, 4, 1),
        (2, 2, 1),
+       (2, 4, 1),
        (2, 5, 1),
        (2, 3, 1);
 
@@ -125,12 +151,37 @@ VALUES ('ADD_USER', pow(2, 0)),
        ('VIEW_ORGANIZATION_LIST', pow(2, 6)),
        ('VIEW_BRANCH_LIST', pow(2, 7)),
        ('CREATE_BRANCH_LIST', pow(2, 8)),
-       ('DELETE_BRANCH_LIST', pow(2, 9));
+       ('DELETE_BRANCH_LIST', pow(2, 9)),
+       ('EDIT_USER_RIGHTS', pow(2, 10));
 
 INSERT INTO remonttiv2.branches
 (branch_id, organization_id, branch_name, address, phone, work_time, create_time, update_time)
-VALUES (1, 8, 'plaza', 'lesnoy 47b', '79994565544', '11-19', 0, 0);
+VALUES (1, 2, 'plaza', 'lesnoy 47b', '79994565544', '11-19', 0, 0);
+INSERT INTO remonttiv2.branches (branch_id, organization_id, branch_name, address, phone, work_time, create_time,
+                                 update_time)
+VALUES (2, 2, 'master', 'Ленина 20', '71234567890', '11-19', 1704535350, 1704535350);
+INSERT INTO remonttiv2.branches (branch_id, organization_id, branch_name, address, phone, work_time, create_time,
+                                 update_time)
+VALUES (3, 2, 'maxi', 'Ленина 14', '78846464466', '10-21', 1704669486, 1704669486);
 
+
+INSERT INTO remonttiv2.user_branches (user_id, branch_id)
+VALUES (3, 1);
+INSERT INTO remonttiv2.user_branches (user_id, branch_id)
+VALUES (3, 2);
+INSERT INTO remonttiv2.user_branches (user_id, branch_id)
+VALUES (3, 3);
+INSERT INTO remonttiv2.user_branches (user_id, branch_id)
+VALUES (2, 1);
+INSERT INTO remonttiv2.user_branches (user_id, branch_id)
+VALUES (2, 2);
+INSERT INTO remonttiv2.user_branches (user_id, branch_id)
+VALUES (2, 3);
+
+INSERT INTO remonttiv2.users_create_relations (creator_id, created_id)
+VALUES (1, 2);
+INSERT INTO remonttiv2.users_create_relations (creator_id, created_id)
+VALUES (2, 3);
 
 SELECT setval('remonttiv2.users_user_id_seq', 100);
 SELECT setval('remonttiv2.organizations_organization_id_seq', 100);

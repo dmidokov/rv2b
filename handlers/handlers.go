@@ -13,6 +13,7 @@ import (
 	branchS "github.com/dmidokov/rv2/storage/postgres/branch"
 	navigationS "github.com/dmidokov/rv2/storage/postgres/navigation"
 	orgS "github.com/dmidokov/rv2/storage/postgres/organization"
+	"github.com/dmidokov/rv2/storage/postgres/rights"
 	"github.com/dmidokov/rv2/storage/postgres/user"
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -65,10 +66,12 @@ func (hm *Service) Router() (*mux.Router, error) {
 	orgService := orgS.New(hm.DB, hm.CookieStore, hm.Logger)
 	branchService := branchS.New(hm.DB, hm.CookieStore, hm.Logger)
 	navigationService := navigationS.New(hm.DB, hm.CookieStore, hm.Logger)
+	rightsService := rights.New(hm.DB, hm.Logger)
 
 	router := mux.NewRouter()
 
 	router.HandleFunc("/", hm.handleFileServer(hm.Config.RootPathWeb, "")).Methods(http.MethodGet, http.MethodOptions)
+	router.HandleFunc("/temp/{fileName}.{ext}", hm.handleFileServer("/bin/temp", "/temp/")).Methods(http.MethodGet, http.MethodOptions)
 	router.HandleFunc("/{folder}/{fileName}.{ext}", hm.handleFileServer(hm.Config.RootPathWeb, "")).Methods(http.MethodGet, http.MethodOptions)
 
 	router.HandleFunc("/auth", authHandler.SignIn(userService, orgService)).Methods(http.MethodPost, http.MethodOptions)
@@ -87,14 +90,19 @@ func (hm *Service) Router() (*mux.Router, error) {
 	router.HandleFunc("/api/branches", hm.loggingMiddleware(branchHandler.Get(branchService, userService))).Methods(http.MethodGet, http.MethodOptions)
 	router.HandleFunc("/api/branches", hm.loggingMiddleware(branchHandler.Create(branchService, userService))).Methods(http.MethodPut, http.MethodOptions)
 	router.HandleFunc("/api/branches/{id}", hm.loggingMiddleware(branchHandler.DeleteBranch(branchService, userService))).Methods(http.MethodDelete, http.MethodOptions)
+	router.HandleFunc("/api/branches/active/{branchId}", hm.loggingMiddleware(branchHandler.SetActiveBranch(userService, hm.CookieStore))).Methods(http.MethodPost, http.MethodOptions)
 
 	router.HandleFunc("/api/users", hm.loggingMiddleware(userHandler.GetUsers(userService))).Methods(http.MethodGet, http.MethodOptions)
 	router.HandleFunc("/api/users", hm.loggingMiddleware(userHandler.Create(userService))).Methods(http.MethodPut, http.MethodOptions)
 	router.HandleFunc("/api/users/{id}", hm.loggingMiddleware(userHandler.DeleteUser(userService))).Methods(http.MethodDelete, http.MethodOptions)
+	router.HandleFunc("/api/users/{id}", hm.loggingMiddleware(userHandler.GetUser(userService))).Methods(http.MethodGet, http.MethodOptions)
+	router.HandleFunc("/api/users/icon", hm.loggingMiddleware(userHandler.GetUserIcon(userService))).Methods(http.MethodGet, http.MethodOptions)
+	router.HandleFunc("/api/users/rights", hm.loggingMiddleware(userHandler.UpdateUserRights(userService, rightsService))).Methods(http.MethodPost, http.MethodOptions)
 
 	router.HandleFunc("/sse/{folder}", hm.sseHandler())
 	router.HandleFunc("/send/{event}/{client}", hm.sendMessage())
 
+	router.HandleFunc("/upload", hm.uploadImage()).Methods(http.MethodPost, http.MethodOptions)
 	if hm.Config.MODE == config.DEV {
 		router.Use(mux.CORSMethodMiddleware(router))
 		router.Use(corsMiddleware)
@@ -142,8 +150,6 @@ func Redirect(w http.ResponseWriter, r *http.Request) {
 }
 
 func (hm *Service) handleFileServer(dir, prefix string) http.HandlerFunc {
-	log := hm.Logger
-	log.Info(dir)
 	fs := http.FileServer(http.Dir(dir))
 	realHandler := http.StripPrefix(prefix, fs).ServeHTTP
 	return func(w http.ResponseWriter, req *http.Request) {
@@ -200,11 +206,14 @@ func (hm *Service) uploadImage() http.HandlerFunc {
 		// a particular naming pattern
 
 		var tempFile *os.File
+		var imageBasePath string
 
 		if isIcon != "" {
-			tempFile, err = os.CreateTemp("/bin/dist/icons", "upload-*.png")
+			tempFile, err = os.CreateTemp("/bin/temp", "upload-*.png")
+			imageBasePath = "/temp/"
 		} else {
-			tempFile, err = os.CreateTemp("/bin/temp-images", "upload-*.png")
+			tempFile, err = os.CreateTemp("/bin/temp/", "upload-*.png")
+			imageBasePath = "/temp/"
 		}
 
 		if err != nil {
@@ -238,12 +247,12 @@ func (hm *Service) uploadImage() http.HandlerFunc {
 				return
 			}
 
-			err := userService.SetIcon(currentUserId, "/icons/"+filepath.Base(tempFile.Name()))
+			err := userService.SetIcon(currentUserId, imageBasePath+filepath.Base(tempFile.Name()))
 			if err != nil {
 				return
 			}
 		}
-		a := map[string]string{"image-name": filepath.Base(tempFile.Name())}
+		a := map[string]string{"image-name": imageBasePath + filepath.Base(tempFile.Name())}
 
 		err = json.NewEncoder(w).Encode(a)
 		if err != nil {

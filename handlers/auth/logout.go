@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"encoding/json"
 	resp "github.com/dmidokov/rv2/response"
 	"github.com/sirupsen/logrus"
 	"net/http"
@@ -21,11 +20,11 @@ func (s *Service) Logout(w http.ResponseWriter, r *http.Request) {
 		"fn": fn,
 	})
 
+	response := resp.New(&w, s.Logger, fn)
+
 	if !err {
 		contextLogger.Errorf("Ошибка сохранения сессии при логауте")
-
-		_ = json.NewEncoder(w).Encode(
-			resp.Error("SessionSaveError"))
+		response.WithError("SessionSaveError")
 
 		return
 	}

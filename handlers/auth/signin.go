@@ -2,7 +2,7 @@ package auth
 
 import (
 	"encoding/json"
-	e "github.com/dmidokov/rv2/entitie"
+	"github.com/dmidokov/rv2/lib/entitie"
 	resp "github.com/dmidokov/rv2/response"
 	"github.com/jackc/pgx/v4"
 	"github.com/sirupsen/logrus"
@@ -20,16 +20,20 @@ type Response struct {
 	resp.Response
 }
 
+type OkData struct {
+	StartPage string `json:"startPage"`
+}
+
 type ErrorResponse struct {
 	resp.Response
 }
 
 type OrganizationProvider interface {
-	GetByHostName(hostName string) (*e.Organization, error)
+	GetByHostName(hostName string) (*entitie.Organization, error)
 }
 
 type UserProvider interface {
-	GetUserByLoginAndOrganization(login string, organizationId int) (*e.User, error)
+	GetUserByLoginAndOrganization(login string, organizationId int) (*entitie.User, error)
 }
 
 func (s *Service) SignIn(userProvider UserProvider, organizationProvider OrganizationProvider) http.HandlerFunc {
@@ -47,15 +51,17 @@ func (s *Service) SignIn(userProvider UserProvider, organizationProvider Organiz
 		var req Request
 		err := json.NewDecoder(r.Body).Decode(&req)
 
+		response := resp.New(&w, s.Logger, fn)
+
 		if err != nil {
-			s.Logger.WithFields(
-				logrus.Fields{
-					"req": req,
-				}).
+			s.Logger.
+				WithFields(
+					logrus.Fields{
+						"req": req,
+					}).
 				Errorf("При декодировании данных авторизации произошла ошибка: %s", err.Error())
 
-			json.NewEncoder(w).Encode(
-				resp.Error("DecodeError"))
+			response.WithError("DecodeError")
 
 			return
 		}
@@ -68,8 +74,7 @@ func (s *Service) SignIn(userProvider UserProvider, organizationProvider Organiz
 		if req.UserPass == "" || req.UserName == "" {
 			contextLogger.Errorf("Один из переданных параметров пустой")
 
-			json.NewEncoder(w).Encode(
-				resp.Error("OneOfTheSpecifiedParametersIsEmpty"))
+			response.WithError("OneOfTheSpecifiedParametersIsEmpty")
 
 			return
 		}
@@ -83,8 +88,7 @@ func (s *Service) SignIn(userProvider UserProvider, organizationProvider Organiz
 						"host": r.Host,
 					}).Errorf("Организация не найдена: %s", err.Error())
 
-				json.NewEncoder(w).Encode(
-					resp.Error("OrganizationNotFound"))
+				response.WithError("OrganizationNotFound")
 
 				return
 			}
@@ -94,8 +98,7 @@ func (s *Service) SignIn(userProvider UserProvider, organizationProvider Organiz
 					"host": r.Host,
 				}).Errorf("Ошибка БД: %s", err.Error())
 
-			json.NewEncoder(w).Encode(
-				resp.Error("DatabaseError"))
+			response.WithError("DatabaseError")
 
 			return
 		}
@@ -107,16 +110,14 @@ func (s *Service) SignIn(userProvider UserProvider, organizationProvider Organiz
 			if err == pgx.ErrNoRows {
 				contextLogger.Errorf("Пользователь не найден: %s", err.Error())
 
-				json.NewEncoder(w).Encode(
-					resp.Error("UserNotFound"))
+				response.WithError("UserNotFound")
 
 				return
 			}
 
 			contextLogger.Errorf("Ошибка БД: %s", err.Error())
 
-			json.NewEncoder(w).Encode(
-				resp.Error("DatabaseError"))
+			response.WithError("DatabaseError")
 
 			return
 		}
@@ -125,8 +126,7 @@ func (s *Service) SignIn(userProvider UserProvider, organizationProvider Organiz
 		if err != nil {
 			contextLogger.Errorf("Неверный пароль: %s", err.Error())
 
-			json.NewEncoder(w).Encode(
-				resp.Error("UserNotFound"))
+			response.WithError("UserNotFound")
 
 			return
 		}
@@ -143,14 +143,14 @@ func (s *Service) SignIn(userProvider UserProvider, organizationProvider Organiz
 		if err != nil {
 			contextLogger.Errorf("Ошибка сохранения сессии: %s", err.Error())
 
-			json.NewEncoder(w).Encode(
-				resp.Error("SessionSaveError"))
+			response.WithError("SessionSaveError")
 
 			return
 		}
 
-		json.NewEncoder(w).Encode(
-			resp.OK())
+		response.OKWithData(OkData{
+			StartPage: user.StartPage,
+		})
 	}
 }
 

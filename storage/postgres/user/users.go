@@ -2,11 +2,13 @@ package user
 
 import (
 	"context"
-	e "github.com/dmidokov/rv2/entitie"
+	"fmt"
+	e "github.com/dmidokov/rv2/lib/entitie"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/sirupsen/logrus"
 	"net/http"
+	"time"
 )
 
 type Service struct {
@@ -15,7 +17,11 @@ type Service struct {
 	Log         *logrus.Logger
 }
 
-const DefaultUserRights = 0
+const (
+	DefaultUserRights = 0
+	//UserInfoLevel_0   = 0
+	InfoFull = 1
+)
 
 type SessionStorage interface {
 	Save(r *http.Request, w http.ResponseWriter, data map[string]interface{}) bool
@@ -48,18 +54,23 @@ func (u *Service) GetUserByLoginAndOrganization(login string, organizationId int
 	return user, nil
 }
 
-func (u *Service) GetByOrganizationId(orgId int) ([]*e.UserShort, error) {
+func (u *Service) GetByOrganizationId(userId int) ([]*e.UserShort, error) {
 
 	query := `
-			select 
-    			user_id, user_name, create_time, update_time 
+			select distinct 
+    			user_id, user_name, create_time, update_time, user_type 
 			from 
-			    remonttiv2.users 
+			    remonttiv2.users as users,
+				remonttiv2.users_create_relations as relations
 			where 
-			    organization_id = $1;
+			    (
+			        (users.user_id = relations.created_id AND relations.creator_id = $1) OR 
+			        users.user_id = $1
+			    )
+			order by user_id;
 `
 
-	rows, err := u.DB.Query(context.Background(), query, orgId)
+	rows, err := u.DB.Query(context.Background(), query, userId)
 	if err != nil {
 		return nil, err
 	}
@@ -115,7 +126,7 @@ func scanRows(rows pgx.Rows) ([]*e.UserShort, error) {
 	var result []*e.UserShort
 	for rows.Next() {
 		item := &e.UserShort{}
-		err := rows.Scan(&item.Id, &item.UserName, &item.CreateTime, &item.UpdateTime)
+		err := rows.Scan(&item.Id, &item.UserName, &item.CreateTime, &item.UpdateTime, &item.Type)
 		if err != nil {
 			return nil, err
 		}
@@ -155,20 +166,37 @@ func (u *Service) GetById(userId int) (*e.User, error) {
 	return user, nil
 }
 
-func (u *Service) Create(user *e.User) error {
+func (u *Service) Create(user *e.User) (int, error) {
+	// Обновляя поля в этом запросе, обновить и update
 	query := `
 		INSERT INTO remonttiv2.users
-			(user_name, user_password, create_time, update_time, organization_id, rights_1, actions_code) 
+			(user_name, user_password, create_time, update_time, organization_id, rights_1, actions_code, user_type, start_page) 
 		VALUES
-			($1, $2, $3, $4, $5, $6, $7);`
+			($1, $2, $3, $4, $5, $6, $7, $8, $9)
+		RETURNING user_id;`
 
-	tag, err := u.DB.Exec(context.Background(), query, user.UserName, user.Password, user.CreateTime, user.UpdateTime, user.OrganizationId, user.Rights, user.ActionCode)
+	row := u.DB.QueryRow(
+		context.Background(),
+		query,
+		user.UserName,
+		user.Password,
+		user.CreateTime,
+		user.UpdateTime,
+		user.OrganizationId,
+		user.Rights,
+		user.ActionCode,
+		user.Type,
+		user.StartPage,
+	)
+
+	var id int
+	err := row.Scan(&id)
+
 	if err != nil {
-		return err
+		return id, err
 	}
-	u.Log.Info("Создано пользователей:", tag.RowsAffected())
 
-	return nil
+	return id, nil
 }
 
 func (u *Service) GetIcon(userId int) *e.UserIcon {
@@ -193,6 +221,8 @@ func scanUser(row pgx.Row) (*e.User, error) {
 		&user.CreateTime,
 		&user.UpdateTime,
 		&user.Icon,
+		&user.Type,
+		&user.StartPage,
 	)
 
 	if err != nil {
@@ -206,7 +236,7 @@ func scanUser(row pgx.Row) (*e.User, error) {
 func (u *Service) SetIcon(userId int, iconLink string) error {
 
 	query := `
-UPDATE remonttiv2.users SET account_icon = $1 WHERE user_id = $2`
+		UPDATE remonttiv2.users SET account_icon = $1 WHERE user_id = $2`
 
 	_, err := u.DB.Exec(context.Background(), query, iconLink, userId)
 	if err != nil {
@@ -214,4 +244,113 @@ UPDATE remonttiv2.users SET account_icon = $1 WHERE user_id = $2`
 	}
 
 	return nil
+}
+
+func (u *Service) SetUserCreateRelations(creatorId int, createdId int) error {
+	query := `
+		INSERT INTO remonttiv2.users_create_relations (creator_id, created_id) VALUES($1, $2)`
+	_, err := u.DB.Exec(context.Background(), query, creatorId, createdId)
+	if err != nil {
+		logrus.Warning(err.Error())
+	}
+
+	return nil
+}
+
+func (u *Service) GetChild(userId int) ([]*e.UserShort, error) {
+
+	query := `
+			select distinct 
+    			user_id, user_name, create_time, update_time, user_type 
+			from 
+			    remonttiv2.users as users,
+				remonttiv2.users_create_relations as relations
+			where 
+			    (
+			        (users.user_id = relations.created_id AND relations.creator_id = $1) OR 
+			        users.user_id = $1
+			    );
+`
+
+	rows, err := u.DB.Query(context.Background(), query, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	return scanRows(rows)
+
+}
+
+func (u *Service) GetInfo(userId int, infoLevel int) (*e.UserInfoFull, error) {
+	userFull := e.UserInfoFull{}
+	switch infoLevel {
+	case InfoFull:
+
+		user, err := u.GetById(userId)
+		if err != nil {
+			return nil, err
+		}
+
+		var userRightsList []int
+		fmt.Printf("userId = %d\n", userId)
+		logrus.Info(user)
+		for i := 1; i <= user.Rights; i = i << 1 {
+			fmt.Printf("user.Rights = %d  i=%d   user.Rights & i >>> %d \n", user.Rights, i, user.Rights&i)
+			if (user.Rights & i) > 0 {
+				userRightsList = append(userRightsList, i)
+			}
+		}
+
+		//TODO: вернуть еще параметров
+		userFull.UserName = user.UserName
+		userFull.Id = user.Id
+		userFull.OrganizationId = user.OrganizationId
+		//userFull.Password = user.Password
+		//userFull.ActionCode = user.ActionCode
+		userFull.UserRights = userRightsList
+		userFull.CreateTime = user.CreateTime
+		userFull.UpdateTime = user.UpdateTime
+		userFull.Icon = user.Icon
+		userFull.Type = user.Type
+		userFull.StartPage = user.StartPage
+	}
+	return &userFull, nil
+}
+
+func (u *Service) UpdateUser(user *e.User) (*e.User, error) {
+	// Обновляя поля в этом запросе, обновить и create
+	query := `
+		update remonttiv2.users set 
+		    user_name = $1, 
+		    user_password = $2, 
+		    update_time = $3, 
+		    organization_id = $4, 
+		    rights_1 = $5, 
+		    actions_code = $6, 
+		    user_type = $7, 
+		    start_page = $8
+		where user_id = $9
+	`
+	_, err := u.DB.Exec(
+		context.Background(),
+		query,
+		user.UserName,
+		user.Password,
+		time.Now().Unix(),
+		user.OrganizationId,
+		user.Rights,
+		user.ActionCode,
+		user.Type,
+		user.StartPage,
+		user.Id,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return u.GetById(user.Id)
+
 }

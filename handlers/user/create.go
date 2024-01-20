@@ -2,9 +2,10 @@ package user
 
 import (
 	"encoding/json"
-	e "github.com/dmidokov/rv2/entitie"
+	"github.com/dmidokov/rv2/lib"
+	e "github.com/dmidokov/rv2/lib/entitie"
 	resp "github.com/dmidokov/rv2/response"
-	"github.com/dmidokov/rv2/rights"
+	"github.com/dmidokov/rv2/storage/postgres/rights"
 	"github.com/dmidokov/rv2/storage/postgres/user"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
@@ -16,13 +17,18 @@ type userCreator interface {
 	GetById(userId int) (*e.User, error)
 	GetOrganizationIdFromSession(r *http.Request) int
 	GetUserIdFromSession(r *http.Request) int
-	GetByOrganizationId(orgId int) ([]*e.UserShort, error)
-	Create(user *e.User) error
+	GetByOrganizationId(userId int) ([]*e.UserShort, error)
+	Create(user *e.User) (int, error)
+	SetUserCreateRelations(creatorId int, createdId int) error
 }
 
 type CreateUserRequest struct {
-	Name     string `json:"name"`
-	Password string `json:"password"`
+	Name             string `json:"name"`
+	Password         string `json:"password"`
+	EmployeeName     string `json:"employeeName"`
+	EmployeeLastName string `json:"employeeLastName"`
+	EmployeeLogin    string `json:"employeeLogin"`
+	Type             string `json:"type"`
 }
 
 func (s *Service) Create(userProvider userCreator) http.HandlerFunc {
@@ -46,12 +52,12 @@ func (s *Service) Create(userProvider userCreator) http.HandlerFunc {
 		userData.Name = strings.Trim(userData.Name, " ")
 		userData.Password = strings.Trim(userData.Password, " ")
 
-		if userData.Name == "" || userData.Password == "" {
+		if (userData.Name == "" || userData.Password == "") && userData.Type == "service" {
 			response.EmptyData()
 			return
 		}
 
-		rightsService := rights.New()
+		rightsService := rights.New(s.DB, s.Logger)
 
 		currentUserId := userProvider.GetUserIdFromSession(r)
 		if currentUserId == 0 {
@@ -82,8 +88,20 @@ func (s *Service) Create(userProvider userCreator) http.HandlerFunc {
 			UpdateTime:     time.Now().Unix(),
 		}
 
-		if rightsService.CheckUserRight(currentUser, rights.AddUser) {
-			err := userProvider.Create(&newUser)
+		userData.Type = strings.Trim(userData.Type, " ")
+
+		switch userData.Type {
+		case "service":
+			newUser.Type = 0
+		case "employee":
+			newUser.Type = 1
+			newUser.UserName = userData.EmployeeLogin
+		}
+
+		createdUserId := 0
+
+		if rightsService.CheckUserRight(currentUser, lib.AddUser) {
+			createdUserId, err = userProvider.Create(&newUser)
 			if err != nil {
 				log.Errorf("Error: %s", err.Error())
 				response.InternalServerError()
@@ -94,6 +112,8 @@ func (s *Service) Create(userProvider userCreator) http.HandlerFunc {
 			response.NotAllowed()
 			return
 		}
+
+		_ = userProvider.SetUserCreateRelations(currentUserId, createdUserId)
 
 		response.OK()
 	}

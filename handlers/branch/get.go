@@ -1,15 +1,16 @@
 package branch
 
 import (
-	e "github.com/dmidokov/rv2/entitie"
+	"github.com/dmidokov/rv2/lib"
+	e "github.com/dmidokov/rv2/lib/entitie"
 	resp "github.com/dmidokov/rv2/response"
-	"github.com/dmidokov/rv2/rights"
+	"github.com/dmidokov/rv2/storage/postgres/rights"
 	"github.com/sirupsen/logrus"
 	"net/http"
 )
 
 type branchGetter interface {
-	GetAll() ([]*e.Branch, error)
+	GetAll(userId int) ([]*e.Branch, error)
 }
 
 // Get возвращает список филиалов с проверкой права по просмотр
@@ -41,13 +42,13 @@ func (s *Service) Get(branchGetter branchGetter, userProvider userProvider) http
 			return
 		}
 
-		if !rights.New().CheckUserRight(currentUser, rights.ViewBranchList) {
+		if !rights.New(s.DB, s.Logger).CheckUserRight(currentUser, lib.ViewBranchList) {
 			contextLogger.Warning("Недостаточно прав")
 			response.NotAllowed()
 			return
 		}
 
-		items, err := branchGetter.GetAll()
+		items, err := branchGetter.GetAll(currentUserId)
 
 		if err != nil {
 			contextLogger.Errorf("Не удалось получить список филиалов: Error: %s", err.Error())

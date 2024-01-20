@@ -2,15 +2,16 @@ package branch
 
 import (
 	"encoding/json"
-	e "github.com/dmidokov/rv2/entitie"
+	"github.com/dmidokov/rv2/lib"
+	e "github.com/dmidokov/rv2/lib/entitie"
 	resp "github.com/dmidokov/rv2/response"
-	"github.com/dmidokov/rv2/rights"
+	"github.com/dmidokov/rv2/storage/postgres/rights"
 	"net/http"
 	"strings"
 )
 
 type branchCreator interface {
-	Create(org *e.Branch) (*e.Branch, error)
+	Create(org *e.Branch, userId int) (*e.Branch, error)
 }
 
 type CreateBranchRequest struct {
@@ -27,7 +28,7 @@ func (s *Service) Create(branchCreator branchCreator, userProvider userProvider)
 		}
 
 		log := s.Logger
-		method := "api.organizations.add"
+		method := "api.branch.create"
 		response := resp.Service{Writer: &w, Logger: s.Logger, Operation: method}
 
 		var orgData CreateBranchRequest
@@ -40,7 +41,7 @@ func (s *Service) Create(branchCreator branchCreator, userProvider userProvider)
 			return
 		}
 
-		rightsService := rights.New()
+		rightsService := rights.New(s.DB, s.Logger)
 
 		currentUserId := userProvider.GetUserIdFromSession(r)
 		if currentUserId == 0 {
@@ -68,9 +69,9 @@ func (s *Service) Create(branchCreator branchCreator, userProvider userProvider)
 			return
 		}
 
-		if rightsService.CheckUserRight(currentUser, rights.AddBranch) {
+		if rightsService.CheckUserRight(currentUser, lib.AddBranch) {
 
-			_, err := branchCreator.Create(newBranch)
+			_, err := branchCreator.Create(newBranch, currentUserId)
 			if err != nil {
 				log.Errorf("Error: %s", err.Error())
 

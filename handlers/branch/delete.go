@@ -1,8 +1,9 @@
 package branch
 
 import (
+	"github.com/dmidokov/rv2/lib"
 	resp "github.com/dmidokov/rv2/response"
-	"github.com/dmidokov/rv2/rights"
+	"github.com/dmidokov/rv2/storage/postgres/rights"
 	"github.com/gorilla/mux"
 	"net/http"
 	"strconv"
@@ -49,8 +50,8 @@ func (s *Service) DeleteBranch(branchProvider DeleteProvider, userProvider userP
 			return
 		}
 
-		rightsProvider := rights.New()
-		if rightsProvider.CheckUserRight(currentUser, rights.DeleteBranch) {
+		rightsProvider := rights.New(s.DB, s.Logger)
+		if rightsProvider.CheckUserRight(currentUser, lib.DeleteBranch) {
 			err = branchProvider.Delete(branchId, currentUser.OrganizationId)
 			if err != nil {
 				log.Errorf("Error: %s", err.Error())

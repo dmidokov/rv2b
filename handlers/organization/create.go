@@ -2,9 +2,10 @@ package organization
 
 import (
 	"encoding/json"
-	e "github.com/dmidokov/rv2/entitie"
+	"github.com/dmidokov/rv2/lib"
+	"github.com/dmidokov/rv2/lib/entitie"
 	resp "github.com/dmidokov/rv2/response"
-	"github.com/dmidokov/rv2/rights"
+	"github.com/dmidokov/rv2/storage/postgres/rights"
 	"github.com/dmidokov/rv2/storage/postgres/user"
 	"github.com/jackc/pgx/v4"
 	"golang.org/x/crypto/bcrypt"
@@ -21,15 +22,15 @@ type CreateOrganizationRequest struct {
 }
 
 type OrgCreator interface {
-	Create(org *e.Organization) (*e.Organization, error)
-	GetByHostName(hostName string) (*e.Organization, error)
+	Create(org *entitie.Organization) (*entitie.Organization, error)
+	GetByHostName(hostName string) (*entitie.Organization, error)
 }
 
 type UserProvider interface {
-	Create(user *e.User) error
+	Create(user *entitie.User) (int, error)
 	GetOrganizationIdFromSession(r *http.Request) int
 	GetUserIdFromSession(r *http.Request) int
-	GetById(userId int) (*e.User, error)
+	GetById(userId int) (*entitie.User, error)
 }
 
 type CreateUserRequest struct {
@@ -39,7 +40,7 @@ type CreateUserRequest struct {
 
 type CreateOKResponse struct {
 	resp.Response
-	Data e.Organization `json:"data"`
+	Data entitie.Organization `json:"data"`
 }
 
 func (s *Service) Create(orgCreator OrgCreator, userProvider UserProvider) http.HandlerFunc {
@@ -62,7 +63,7 @@ func (s *Service) Create(orgCreator OrgCreator, userProvider UserProvider) http.
 			return
 		}
 
-		newOrganization := &e.Organization{
+		newOrganization := &entitie.Organization{
 			Name: strings.Trim(orgData.Name, " "),
 			Host: strings.Trim(orgData.Host, " "),
 		}
@@ -80,7 +81,7 @@ func (s *Service) Create(orgCreator OrgCreator, userProvider UserProvider) http.
 
 		if org != nil {
 			log.Warning("Organization exist")
-			_ = json.NewEncoder(w).Encode(resp.Error("OrganizationIsAlreadyExist"))
+			response.WithError("OrganizationIsAlreadyExist")
 			return
 		}
 
@@ -94,7 +95,7 @@ func (s *Service) Create(orgCreator OrgCreator, userProvider UserProvider) http.
 			return
 		}
 
-		rightsService := rights.New()
+		rightsService := rights.New(s.DB, s.Logger)
 
 		currentUserId := userProvider.GetUserIdFromSession(r)
 		if currentUserId == 0 {
@@ -110,7 +111,7 @@ func (s *Service) Create(orgCreator OrgCreator, userProvider UserProvider) http.
 
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(userData.Password), s.Config.PasswordCost)
 
-		newUser := e.User{
+		newUser := entitie.User{
 			UserName:       strings.Trim(userData.Name, " "),
 			Password:       string(hashedPassword),
 			OrganizationId: currentUserOrganizationId,
@@ -127,7 +128,7 @@ func (s *Service) Create(orgCreator OrgCreator, userProvider UserProvider) http.
 
 		newOrganization.Creator = currentUserId
 
-		if rightsService.CheckUserRight(currentUser, rights.AddUser&rights.AddOrganization) {
+		if rightsService.CheckUserRight(currentUser, lib.AddUser&lib.AddOrganization) {
 
 			createdOrganization, err := orgCreator.Create(newOrganization)
 			if err != nil {
@@ -139,7 +140,7 @@ func (s *Service) Create(orgCreator OrgCreator, userProvider UserProvider) http.
 
 			newUser.OrganizationId = createdOrganization.Id
 
-			err = userProvider.Create(&newUser)
+			_, err = userProvider.Create(&newUser)
 			if err != nil {
 				log.Errorf("Error: %s", err.Error())
 				response.InternalServerError()

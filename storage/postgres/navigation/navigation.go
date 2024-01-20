@@ -2,7 +2,7 @@ package navigation
 
 import (
 	"context"
-	e "github.com/dmidokov/rv2/entitie"
+	e "github.com/dmidokov/rv2/lib/entitie"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/sirupsen/logrus"

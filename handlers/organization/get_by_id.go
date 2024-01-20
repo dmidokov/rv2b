@@ -1,7 +1,7 @@
 package organization
 
 import (
-	e "github.com/dmidokov/rv2/entitie"
+	e "github.com/dmidokov/rv2/lib/entitie"
 	resp "github.com/dmidokov/rv2/response"
 	"github.com/gorilla/mux"
 	"net/http"

@@ -1,7 +1,7 @@
 package user
 
 import (
-	e "github.com/dmidokov/rv2/entitie"
+	e "github.com/dmidokov/rv2/lib/entitie"
 	resp "github.com/dmidokov/rv2/response"
 	"net/http"
 )
@@ -10,7 +10,8 @@ type userProvider interface {
 	GetById(userId int) (*e.User, error)
 	GetOrganizationIdFromSession(r *http.Request) int
 	GetUserIdFromSession(r *http.Request) int
-	GetByOrganizationId(orgId int) ([]*e.UserShort, error)
+	GetByOrganizationId(userId int) ([]*e.UserShort, error)
+	GetInfo(userId int, infoLevel int) (*e.UserInfoFull, error)
 }
 
 func (s *Service) GetUsers(userProvider userProvider) http.HandlerFunc {
@@ -22,6 +23,7 @@ func (s *Service) GetUsers(userProvider userProvider) http.HandlerFunc {
 		log := s.Logger
 		method := "api.users.get"
 		response := resp.Service{Writer: &w, Logger: s.Logger, Operation: method}
+		log.Info(method)
 
 		organizationId := userProvider.GetOrganizationIdFromSession(r)
 		if organizationId == 0 {
@@ -29,7 +31,13 @@ func (s *Service) GetUsers(userProvider userProvider) http.HandlerFunc {
 			return
 		}
 
-		items, err := userProvider.GetByOrganizationId(organizationId)
+		currentUserId := userProvider.GetUserIdFromSession(r)
+		if currentUserId == 0 {
+			response.Unauthorized()
+			return
+		}
+
+		items, err := userProvider.GetByOrganizationId(currentUserId)
 		if err != nil {
 			log.Errorf("Error: %s", err.Error())
 

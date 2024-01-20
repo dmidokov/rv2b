@@ -1,9 +1,10 @@
 package user
 
 import (
-	e "github.com/dmidokov/rv2/entitie"
+	"github.com/dmidokov/rv2/lib"
+	e "github.com/dmidokov/rv2/lib/entitie"
 	resp "github.com/dmidokov/rv2/response"
-	"github.com/dmidokov/rv2/rights"
+	"github.com/dmidokov/rv2/storage/postgres/rights"
 	"github.com/gorilla/mux"
 	"net/http"
 	"strconv"
@@ -40,7 +41,7 @@ func (s *Service) DeleteUser(userRemover userRemover) http.HandlerFunc {
 			return
 		}
 
-		rightsService := rights.New()
+		rightsService := rights.New(s.DB, s.Logger)
 
 		currentUserId := userRemover.GetUserIdFromSession(r)
 		if currentUserId == 0 {
@@ -54,7 +55,7 @@ func (s *Service) DeleteUser(userRemover userRemover) http.HandlerFunc {
 			return
 		}
 
-		if rightsService.CheckUserRight(currentUser, rights.DeleteUser) {
+		if rightsService.CheckUserRight(currentUser, lib.DeleteUser) {
 			err := userRemover.Delete(userId)
 			if err != nil {
 				log.Errorf("Error: %s", err.Error())
