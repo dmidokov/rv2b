@@ -2,7 +2,6 @@ package user
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/dmidokov/rv2/lib"
 	e "github.com/dmidokov/rv2/lib/entitie"
 	resp "github.com/dmidokov/rv2/response"
@@ -30,7 +29,7 @@ type userRightsUpdater interface {
 	//SetUserCreateRelations(creatorId int, createdId int) error
 }
 
-func (s *Service) UpdateUserRights(userProvider userRightsUpdater, rightsProvider rightsSetter) http.HandlerFunc {
+func (s *Service) Update(userProvider userRightsUpdater, rightsProvider rightsSetter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodOptions {
 			return
@@ -43,47 +42,68 @@ func (s *Service) UpdateUserRights(userProvider userRightsUpdater, rightsProvide
 
 		request := UpdateUserRightsRequest{}
 		err := json.NewDecoder(r.Body).Decode(&request)
-		fmt.Println(r.Body)
 		if err != nil {
 			response.JsonDecodeError()
 			return
 		}
 
-		currentUserId := userProvider.GetUserIdFromSession(r)
-		if currentUserId == 0 {
-			response.Unauthorized()
+		query := r.URL.Query()
+		field := query.Get("field")
+		if field == "" {
+			response.WrongParameter()
 			return
 		}
 
-		currentUser, err := userProvider.GetById(currentUserId)
-		if err != nil {
-			response.InternalServerError()
+		switch field {
+		case "rights":
+			updateRights(response, request, r, userProvider, rightsProvider)
+		default:
+			response.WrongParameter()
 		}
-
-		if !rightsProvider.CheckUserRight(currentUser, lib.EditUserRights) {
-			response.NotAllowed()
-			return
-		}
-
-		userToUpdate, err := userProvider.GetById(request.UserId)
-		if err != nil {
-			response.UserNotFound()
-			return
-		}
-
-		if request.Set {
-			userToUpdate.Rights = request.Value | userToUpdate.Rights
-		} else {
-			userToUpdate.Rights = (math.MaxInt ^ request.Value) & userToUpdate.Rights
-		}
-
-		_, err = userProvider.UpdateUser(userToUpdate)
-		if err != nil {
-			response.InternalServerError()
-			return
-		}
-
-		response.OK()
 
 	}
+}
+
+func updateRights(
+	response resp.Service,
+	request UpdateUserRightsRequest,
+	r *http.Request,
+	userProvider userRightsUpdater,
+	rightsProvider rightsSetter,
+) {
+	currentUserId := userProvider.GetUserIdFromSession(r)
+	if currentUserId == 0 {
+		response.Unauthorized()
+		return
+	}
+
+	currentUser, err := userProvider.GetById(currentUserId)
+	if err != nil {
+		response.InternalServerError()
+	}
+
+	userToUpdate, err := userProvider.GetById(request.UserId)
+	if err != nil {
+		response.UserNotFound()
+		return
+	}
+
+	if !rightsProvider.CheckUserRight(currentUser, lib.EditUserRights) {
+		response.NotAllowed()
+		return
+	}
+
+	if request.Set {
+		userToUpdate.Rights = request.Value | userToUpdate.Rights
+	} else {
+		userToUpdate.Rights = (math.MaxInt ^ request.Value) & userToUpdate.Rights
+	}
+
+	_, err = userProvider.UpdateUser(userToUpdate)
+	if err != nil {
+		response.InternalServerError()
+		return
+	}
+
+	response.OK()
 }
