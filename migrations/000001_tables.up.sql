@@ -94,6 +94,20 @@ CREATE TABLE IF NOT EXISTS remonttiv2.users_create_relations
 )
     TABLESPACE pg_default;
 
+CREATE TABLE IF NOT EXISTS remonttiv2.entity_group_to_entity_name
+(
+    group_id    integer NOT NULL,
+    entity_name character varying(40)
+)
+    TABLESPACE pg_default;
+
+CREATE TABLE IF NOT EXISTS remonttiv2.hot_switch_relations
+(
+    from_user integer NOT NULL,
+    to_user   integer NOT NULL
+)
+    TABLESPACE pg_default;
+
 INSERT INTO remonttiv2.users (user_id, organization_id, user_name, user_password, actions_code, rights_1, create_time,
                               update_time, account_icon, user_type, start_page)
 VALUES (1, 1, 'admin', '$2a$14$adZQlMqeE3qgAgGv.25PhuREomuM.zjCVIrLdoEUCpruv5g6DKEUi', 0, 2147483647, 0, 0, '', 0, '/');
@@ -116,7 +130,7 @@ VALUES (1, 'control', 'control.remontti.site', 0, 0, 1),
 INSERT INTO remonttiv2.navigation
     (navigation_id, title, tooltip_text, navigation_group, icon, link)
 VALUES (1, 'organizations', 'organization_tooltip', 1, '/icons/organization.svg', '#/organizations'),
-       (2, 'branch', 'branch_tooltip', 1, '/icons/branch.svg', '#/branches'),
+       (2, 'branch', 'branch_tooltip', 1, '/icons/branch-two.svg', '#/branches'),
        (3, 'settings', 'branch_tooltip', 1, '/icons/settings.svg', '#/settings'),
        (4, 'account', 'branch_tooltip', 1, '/icons/account.svg', '#/account'),
        (5, 'users', 'branch_tooltip', 1, '/icons/users.svg', '#/users'),
@@ -134,6 +148,7 @@ VALUES (1, 1, 1),
        (1, 5, 1),
        (1, 6, 1),
        (1, 4, 1),
+       (1, 2, 1),
        (2, 2, 1),
        (2, 4, 1),
        (2, 5, 1),
@@ -152,7 +167,9 @@ VALUES ('ADD_USER', pow(2, 0)),
        ('VIEW_BRANCH_LIST', pow(2, 7)),
        ('CREATE_BRANCH_LIST', pow(2, 8)),
        ('DELETE_BRANCH_LIST', pow(2, 9)),
-       ('EDIT_USER_RIGHTS', pow(2, 10));
+       ('EDIT_USER_RIGHTS', pow(2, 10)),
+       ('EDIT_USER_NAVIGATION', pow(2, 11)),
+       ('USER_HOT_SWITCH', pow(2, 12));
 
 INSERT INTO remonttiv2.branches
 (branch_id, organization_id, branch_name, address, phone, work_time, create_time, update_time)
@@ -182,6 +199,9 @@ INSERT INTO remonttiv2.users_create_relations (creator_id, created_id)
 VALUES (1, 2);
 INSERT INTO remonttiv2.users_create_relations (creator_id, created_id)
 VALUES (2, 3);
+
+INSERT INTO remonttiv2.entity_group_to_entity_name (group_id, entity_name)
+VALUES (1, 'Navigation');
 
 SELECT setval('remonttiv2.users_user_id_seq', 100);
 SELECT setval('remonttiv2.organizations_organization_id_seq', 100);

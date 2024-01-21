@@ -86,6 +86,7 @@ func (s *Service) Create(userProvider userCreator) http.HandlerFunc {
 			Rights:         user.DefaultUserRights,
 			CreateTime:     time.Now().Unix(),
 			UpdateTime:     time.Now().Unix(),
+			StartPage:      "/",
 		}
 
 		userData.Type = strings.Trim(userData.Type, " ")
@@ -107,13 +108,12 @@ func (s *Service) Create(userProvider userCreator) http.HandlerFunc {
 				response.InternalServerError()
 				return
 			}
+			_ = userProvider.SetUserCreateRelations(currentUserId, createdUserId)
 		} else {
 			log.Warningf("Method now allowed for user %d", currentUserId)
 			response.NotAllowed()
 			return
 		}
-
-		_ = userProvider.SetUserCreateRelations(currentUserId, createdUserId)
 
 		response.OK()
 	}

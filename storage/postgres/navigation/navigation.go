@@ -25,7 +25,7 @@ func New(DB *pgxpool.Pool, CookieStore SessionStorage, Log *logrus.Logger) *Serv
 	}
 }
 
-func (o *Service) Get(userId int) ([]*e.Navigation, error) {
+func (o *Service) Get(userId int) (*[]e.Navigation, error) {
 
 	query := `
 			SELECT 
@@ -52,15 +52,35 @@ func (o *Service) Get(userId int) ([]*e.Navigation, error) {
 
 }
 
-func scanRows(rows pgx.Rows) ([]*e.Navigation, error) {
-	var result []*e.Navigation
+func scanRows(rows pgx.Rows) (*[]e.Navigation, error) {
+	var result []e.Navigation
 	for rows.Next() {
-		item := &e.Navigation{}
+		item := e.Navigation{}
 		err := rows.Scan(&item.Id, &item.Title, &item.Tooltip, &item.Group, &item.Icon, &item.Link)
 		if err != nil {
 			return nil, err
 		}
 		result = append(result, item)
 	}
-	return result, nil
+	return &result, nil
+}
+
+// Set TODO: паренести в работу с entities
+func (o *Service) Set(userId int, navigationId int, groupId int) (*e.NavigationAvailable, error) {
+	query := "insert into remonttiv2.rights (user_id, entity_id, entity_group) values ($1, $2, $3)"
+	_, err := o.DB.Exec(context.Background(), query, userId, navigationId, groupId)
+	if err != nil {
+		return nil, err
+	}
+	return &e.NavigationAvailable{UserId: userId, EntityId: navigationId, GroupId: 1}, nil
+}
+
+// Delete TODO: паренести в работу с entities
+func (o *Service) Delete(userId int, navigationId int, groupId int) error {
+	query := "delete from remonttiv2.rights where user_id = $1 and entity_id=$2 and entity_group=$3"
+	_, err := o.DB.Exec(context.Background(), query, userId, navigationId, groupId)
+	if err != nil {
+		return err
+	}
+	return nil
 }

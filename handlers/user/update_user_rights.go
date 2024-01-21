@@ -21,15 +21,20 @@ type rightsSetter interface {
 
 type userRightsUpdater interface {
 	GetById(userId int) (*e.User, error)
-	//GetOrganizationIdFromSession(r *http.Request) int
 	GetUserIdFromSession(r *http.Request) int
 	UpdateUser(user *e.User) (*e.User, error)
-	//GetByOrganizationId(orgId, userId int) ([]*e.UserShort, error)
-	//Create(user *e.User) (int, error)
-	//SetUserCreateRelations(creatorId int, createdId int) error
 }
 
-func (s *Service) Update(userProvider userRightsUpdater, rightsProvider rightsSetter) http.HandlerFunc {
+type navigationUpdater interface {
+	Set(userId int, navigationId int, groupId int) (*e.NavigationAvailable, error)
+	Delete(userId int, navigationId int, groupId int) error
+}
+
+func (s *Service) Update(
+	userProvider userRightsUpdater,
+	rightsProvider rightsSetter,
+	navigationProvider navigationUpdater,
+) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodOptions {
 			return
@@ -54,9 +59,13 @@ func (s *Service) Update(userProvider userRightsUpdater, rightsProvider rightsSe
 			return
 		}
 
+		s.Logger.Info(field)
+
 		switch field {
 		case "rights":
 			updateRights(response, request, r, userProvider, rightsProvider)
+		case "navigation":
+			updateNavigation(response, request, r, userProvider, rightsProvider, navigationProvider)
 		default:
 			response.WrongParameter()
 		}
@@ -100,6 +109,52 @@ func updateRights(
 	}
 
 	_, err = userProvider.UpdateUser(userToUpdate)
+	if err != nil {
+		response.InternalServerError()
+		return
+	}
+
+	response.OK()
+}
+func updateNavigation(
+	response resp.Service,
+	request UpdateUserRightsRequest,
+	r *http.Request,
+	userProvider userRightsUpdater,
+	rightsProvider rightsSetter,
+	navigationProvider navigationUpdater,
+) {
+	currentUserId := userProvider.GetUserIdFromSession(r)
+	if currentUserId == 0 {
+		response.Unauthorized()
+		return
+	}
+
+	currentUser, err := userProvider.GetById(currentUserId)
+	if err != nil {
+		response.InternalServerError()
+	}
+
+	userToUpdate, err := userProvider.GetById(request.UserId)
+	if err != nil {
+		response.UserNotFound()
+		return
+	}
+
+	// TODO: добавить право на редактирование навигации и проверить что
+	// пользователю можно дать эту навигацию, то есть что тот кто устанавливает
+	// имеет у себя такое поле навишации
+	if !rightsProvider.CheckUserRight(currentUser, lib.EditUserNavigation) {
+		response.NotAllowed()
+		return
+	}
+
+	if request.Set {
+		_, err = navigationProvider.Set(userToUpdate.Id, request.Value, 1)
+	} else {
+		err = navigationProvider.Delete(userToUpdate.Id, request.Value, 1)
+	}
+
 	if err != nil {
 		response.InternalServerError()
 		return

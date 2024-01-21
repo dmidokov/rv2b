@@ -2,7 +2,6 @@ package user
 
 import (
 	"context"
-	"fmt"
 	e "github.com/dmidokov/rv2/lib/entitie"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -267,8 +266,7 @@ func (u *Service) GetChild(userId int) ([]*e.UserShort, error) {
 				remonttiv2.users_create_relations as relations
 			where 
 			    (
-			        (users.user_id = relations.created_id AND relations.creator_id = $1) OR 
-			        users.user_id = $1
+			        (users.user_id = relations.created_id AND relations.creator_id = $1)
 			    );
 `
 
@@ -294,10 +292,8 @@ func (u *Service) GetInfo(userId int, infoLevel int) (*e.UserInfoFull, error) {
 		}
 
 		var userRightsList []int
-		fmt.Printf("userId = %d\n", userId)
-		logrus.Info(user)
+
 		for i := 1; i <= user.Rights; i = i << 1 {
-			fmt.Printf("user.Rights = %d  i=%d   user.Rights & i >>> %d \n", user.Rights, i, user.Rights&i)
 			if (user.Rights & i) > 0 {
 				userRightsList = append(userRightsList, i)
 			}
@@ -307,8 +303,8 @@ func (u *Service) GetInfo(userId int, infoLevel int) (*e.UserInfoFull, error) {
 		userFull.UserName = user.UserName
 		userFull.Id = user.Id
 		userFull.OrganizationId = user.OrganizationId
-		//userFull.Password = user.Password
-		//userFull.ActionCode = user.ActionCode
+		userFull.Password = user.Password
+		userFull.ActionCode = user.ActionCode
 		userFull.UserRights = userRightsList
 		userFull.CreateTime = user.CreateTime
 		userFull.UpdateTime = user.UpdateTime
@@ -333,7 +329,7 @@ func (u *Service) UpdateUser(user *e.User) (*e.User, error) {
 		    start_page = $8
 		where user_id = $9
 	`
-	_, err := u.DB.Exec(
+	p, err := u.DB.Exec(
 		context.Background(),
 		query,
 		user.UserName,
@@ -347,10 +343,46 @@ func (u *Service) UpdateUser(user *e.User) (*e.User, error) {
 		user.Id,
 	)
 
+	logrus.Info(p.String())
+
 	if err != nil {
 		return nil, err
 	}
 
 	return u.GetById(user.Id)
+}
 
+func (u *Service) GetParentId(userId int) (int, error) {
+	query := `select creator_id from remonttiv2.users_create_relations where created_id=$1`
+	result := u.DB.QueryRow(context.Background(), query, userId)
+
+	var id *int
+
+	err := result.Scan(&id)
+	if err != nil {
+		return 0, err
+	}
+
+	return *id, nil
+}
+
+func (u *Service) GetParentUser(userId int) (*e.User, error) {
+	query := `
+			select distinct * 
+			from 
+				remonttiv2.users as users, remonttiv2.users_create_relations as relations
+			where 
+				users.user_id=relations.creator_id AND
+				relations.created_id = $1
+    `
+
+	row := u.DB.QueryRow(context.Background(), query, userId)
+
+	user, err := scanUser(row)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }

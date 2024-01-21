@@ -28,16 +28,34 @@ type UserIcon struct {
 }
 
 type UserInfoFull struct {
-	Id                         int            `json:"id,omitempty"`
-	UserName                   string         `json:"userName,omitempty"`
-	CreateTime                 int64          `json:"createTime"`
-	UpdateTime                 int64          `json:"updateTime"`
-	Type                       int            `json:"type"`
-	StartPage                  string         `json:"startPage"`
-	OrganizationId             int            `json:"organizationId"`
-	OrganizationName           string         `json:"organizationName"`
-	MapRightNameToRightId      map[string]int `json:"mapRightNameToRightId"`
-	UserRights                 []int          `json:"userRights"`
-	Icon                       string         `json:"icon"`
-	UserRightsWithDescriptions []Right        `json:"userRightsWithDesription"`
+	Id                         int                  `json:"id,omitempty"`
+	UserName                   string               `json:"userName,omitempty"`
+	CreateTime                 int64                `json:"createTime"`
+	UpdateTime                 int64                `json:"updateTime"`
+	Type                       int                  `json:"type"`
+	StartPage                  string               `json:"startPage"`
+	OrganizationId             int                  `json:"organizationId"`
+	OrganizationName           string               `json:"organizationName"`
+	MapRightNameToRightId      map[string]int       `json:"mapRightNameToRightId"`
+	UserRights                 []int                `json:"userRights"`
+	Icon                       string               `json:"icon"`
+	UserRightsWithDescriptions []Right              `json:"userRightsWithDesription"`
+	Password                   string               `json:"-"`
+	ActionCode                 int                  `json:"-"`
+	Navigation                 []NavigationInfoPage `json:"navigation"`
+	Childs                     []UserIdAndLogin     `json:"childs"`
+}
+
+type UserIdAndLogin struct {
+	Id    int    `json:"id"`
+	Login string `json:"login"`
+}
+
+func ConvertUserToUserLogin(user UserShort) UserIdAndLogin {
+	var u UserIdAndLogin
+
+	u.Id = user.Id
+	u.Login = user.UserName
+
+	return u
 }

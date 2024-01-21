@@ -12,6 +12,8 @@ type userProvider interface {
 	GetUserIdFromSession(r *http.Request) int
 	GetByOrganizationId(userId int) ([]*e.UserShort, error)
 	GetInfo(userId int, infoLevel int) (*e.UserInfoFull, error)
+	GetParentId(userId int) (int, error)
+	GetChild(userId int) ([]*e.UserShort, error)
 }
 
 func (s *Service) GetUsers(userProvider userProvider) http.HandlerFunc {

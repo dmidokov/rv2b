@@ -11,7 +11,7 @@ type userProvider interface {
 }
 
 type navigationProvider interface {
-	Get(userId int) ([]*e.Navigation, error)
+	Get(userId int) (*[]e.Navigation, error)
 }
 
 func (s *Service) GetNavigation(userProvider userProvider, navigationProvider navigationProvider) http.HandlerFunc {

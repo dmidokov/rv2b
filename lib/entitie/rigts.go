@@ -10,3 +10,9 @@ type Right struct {
 	Name  string `json:"name,omitempty"`
 	Value int    `json:"value,omitempty"`
 }
+
+type Entities struct {
+	UserId   int `json:"userId"`
+	EntityId int `json:"entityId"`
+	GroupId  int `json:"groupId"`
+}

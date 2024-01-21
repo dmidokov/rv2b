@@ -56,8 +56,8 @@ func (rg *Service) GetRightsNamesByIds(ids []int) (*[]e.RightNameValue, error) {
 
 }
 
-// GetByUserRights возвращает права (индексы, названия и значения) прав пользователя
-// пользователям назначены права в таблице users в виде числа, данный метод вернет
+// GetByUserRights возвращает индексы, названия и значения прав пользователя.
+// Пользователям назначены права в таблице users в виде числа, данный метод вернет
 // указанные выше значения только для тех прав которые выставлены для пользователя
 func (rg *Service) GetByUserRights(rightsValue int) (*[]e.Right, error) {
 	query := "select * from remonttiv2.rights_names where value & $1 > 0"
@@ -79,5 +79,25 @@ func (rg *Service) GetByUserRights(rightsValue int) (*[]e.Right, error) {
 	}
 
 	return &result, nil
+}
 
+func (rg *Service) GetAvailableEntities(userId int, groupId int) (*[]e.Entities, error) {
+	query := `select * from remonttiv2.rights where user_id = $1 AND entity_group=$2`
+	rows, err := rg.DB.Query(context.Background(), query, userId, groupId)
+
+	var result []e.Entities
+	for rows.Next() {
+		item := e.Entities{}
+		err := rows.Scan(&item.UserId, &item.EntityId, &item.GroupId)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, item)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &result, nil
 }
