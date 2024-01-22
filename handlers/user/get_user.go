@@ -39,12 +39,14 @@ func (s *Service) GetUser(userProvider userGetter, navigationProvider navigation
 		varsId, ok := vars["id"]
 
 		if !ok {
+			log.Errorf("Empty data")
 			response.EmptyData()
 			return
 		}
 
 		userId, err := strconv.Atoi(varsId)
 		if err != nil {
+			log.Errorf("Can't conver string to int %s", err.Error())
 			response.InternalServerError()
 			return
 		}
@@ -119,12 +121,14 @@ func (s *Service) GetUser(userProvider userGetter, navigationProvider navigation
 
 		parentId, err := userProvider.GetParentId(userId)
 		if err != nil {
+			log.Errorf("Error: %s", err.Error())
 			response.InternalServerError()
 			return
 		}
 
 		childUsers, err := userProvider.GetChild(parentId)
 		if err != nil {
+			log.Errorf("Error: %s", err.Error())
 			response.InternalServerError()
 			return
 		}

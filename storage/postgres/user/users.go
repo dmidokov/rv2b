@@ -386,3 +386,12 @@ func (u *Service) GetParentUser(userId int) (*e.User, error) {
 
 	return user, nil
 }
+
+func (u *Service) SetHotSwitchRelation(fromId, toId int) error {
+	query := `insert into remonttiv2.hot_switch_relations (from_user, to_user) values ($1, $2)`
+	_, err := u.DB.Exec(context.Background(), query, fromId, toId)
+	if err != nil {
+		return err
+	}
+	return nil
+}

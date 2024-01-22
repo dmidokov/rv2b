@@ -13,5 +13,6 @@ const (
 	DeleteBranch
 	EditUserRights
 	EditUserNavigation
-	_ //UserHotSwitch
+	SetUserHotSwitch
+	_
 )

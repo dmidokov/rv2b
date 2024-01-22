@@ -169,7 +169,7 @@ VALUES ('ADD_USER', pow(2, 0)),
        ('DELETE_BRANCH_LIST', pow(2, 9)),
        ('EDIT_USER_RIGHTS', pow(2, 10)),
        ('EDIT_USER_NAVIGATION', pow(2, 11)),
-       ('USER_HOT_SWITCH', pow(2, 12));
+       ('SET_USER_HOT_SWITCH', pow(2, 12));
 
 INSERT INTO remonttiv2.branches
 (branch_id, organization_id, branch_name, address, phone, work_time, create_time, update_time)
@@ -199,6 +199,8 @@ INSERT INTO remonttiv2.users_create_relations (creator_id, created_id)
 VALUES (1, 2);
 INSERT INTO remonttiv2.users_create_relations (creator_id, created_id)
 VALUES (2, 3);
+INSERT INTO remonttiv2.users_create_relations (creator_id, created_id)
+VALUES (0, 1);
 
 INSERT INTO remonttiv2.entity_group_to_entity_name (group_id, entity_name)
 VALUES (1, 'Navigation');
