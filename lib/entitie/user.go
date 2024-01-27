@@ -44,6 +44,7 @@ type UserInfoFull struct {
 	ActionCode                 int                  `json:"-"`
 	Navigation                 []NavigationInfoPage `json:"navigation"`
 	Childs                     []UserIdAndLogin     `json:"childs"`
+	HotSwitch                  []UserIdAndLogin     `json:"hotSwitch"`
 }
 
 type UserIdAndLogin struct {

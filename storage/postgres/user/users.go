@@ -395,3 +395,24 @@ func (u *Service) SetHotSwitchRelation(fromId, toId int) error {
 	}
 	return nil
 }
+
+func (u *Service) RemoveHotSwitchRelation(fromId, toId int) error {
+	query := `delete from remonttiv2.hot_switch_relations where from_user=$1 and  to_user=$2`
+	_, err := u.DB.Exec(context.Background(), query, fromId, toId)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (u *Service) GetHotSwitch(userId int) ([]*e.UserShort, error) {
+	query := `select users.user_id, users.user_name, users.create_time, users.update_time, users.user_type from remonttiv2.users as users, remonttiv2.hot_switch_relations as switch where users.user_id = switch.to_user and switch.from_user=$1`
+	rows, err := u.DB.Query(context.Background(), query, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	return scanRows(rows)
+}

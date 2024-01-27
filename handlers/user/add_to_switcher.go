@@ -57,8 +57,8 @@ func (s *Service) AddToSwitcher(
 			response.InternalServerError()
 		}
 
-		if !rightsProvider.CheckUserRight(currentUser, lib.SetUserHotSwitch) {
-			log.Errorf("Error: %s", err.Error())
+		if !rightsProvider.CheckUserRight(currentUser, lib.EditUserHotSwitch) {
+			log.Errorf("Method not allowed")
 			response.NotAllowed()
 			return
 		}

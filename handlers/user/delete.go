@@ -16,6 +16,14 @@ type userRemover interface {
 	Delete(userId int) error
 }
 
+// TODO: при удалении надо удалять из смежных таблиц
+// hot_switch_relations
+// navigation
+// rights
+// user_create_relations
+// user_branches
+// organizations (creator)
+
 func (s *Service) DeleteUser(userRemover userRemover) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodOptions {

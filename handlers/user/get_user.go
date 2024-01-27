@@ -21,6 +21,7 @@ type userGetter interface {
 	GetInfo(userId int, infoLevel int) (*e.UserInfoFull, error)
 	GetParentId(userId int) (int, error)
 	GetChild(userId int) ([]*e.UserShort, error)
+	GetHotSwitch(userId int) ([]*e.UserShort, error)
 }
 
 func (s *Service) GetUser(userProvider userGetter, navigationProvider navigationProvider) http.HandlerFunc {
@@ -59,88 +60,120 @@ func (s *Service) GetUser(userProvider userGetter, navigationProvider navigation
 		fullUserInfo, err := userProvider.GetInfo(userId, 1)
 		if err != nil {
 			log.Errorf("Error: %s", err.Error())
-
-			response.InternalServerError()
-			return
-		}
-
-		currentUserId := userProvider.GetUserIdFromSession(r)
-		currentUser, err := userProvider.GetById(currentUserId)
-
-		if err != nil {
-			log.Errorf("Error: %s", err.Error())
-
 			response.InternalServerError()
 			return
 		}
 
 		rightsService := rights.New(s.DB, s.Logger)
-		currentUserRightsWithDescriptions, err := rightsService.GetByUserRights(currentUser.Rights)
-
-		if err != nil {
-			log.Errorf("Error: %s", err.Error())
-
-			response.InternalServerError()
-			return
-		}
-
-		fullUserInfo.UserRightsWithDescriptions = *currentUserRightsWithDescriptions
-		currentUserNavigation, err := navigationProvider.Get(currentUserId)
-		if err != nil {
-			log.Errorf("Error: %s", err.Error())
-
-			response.InternalServerError()
-			return
-		}
-
-		searchUserAvailableNavigation, err := navigationProvider.Get(userId)
-		if err != nil {
-			log.Errorf("Error: %s", err.Error())
-
-			response.InternalServerError()
-			return
-		}
-
-		var shortNavigationInfo []e.NavigationInfoPage
-
-		for _, v := range *currentUserNavigation {
-			elem := e.NavigationInfoPage{
-				Id:      v.Id,
-				Title:   v.Title,
-				Enabled: false,
-			}
-			for _, vv := range *searchUserAvailableNavigation {
-				if v.Id == vv.Id {
-					elem.Enabled = true
-				}
-			}
-			shortNavigationInfo = append(shortNavigationInfo, elem)
-		}
-
-		fullUserInfo.Navigation = shortNavigationInfo
-
-		parentId, err := userProvider.GetParentId(userId)
+		currentUserId := userProvider.GetUserIdFromSession(r)
+		fullUserInfo.UserRightsWithDescriptions, err = getCurrentUserRightsWithDescription(userProvider, currentUserId, rightsService)
 		if err != nil {
 			log.Errorf("Error: %s", err.Error())
 			response.InternalServerError()
 			return
 		}
 
-		childUsers, err := userProvider.GetChild(parentId)
+		fullUserInfo.Navigation, err = getUserNavigation(navigationProvider, currentUserId, userId)
 		if err != nil {
 			log.Errorf("Error: %s", err.Error())
 			response.InternalServerError()
 			return
 		}
 
-		var childUsersAndLoginList []e.UserIdAndLogin
-
-		for _, item := range childUsers {
-			childUsersAndLoginList = append(childUsersAndLoginList, e.ConvertUserToUserLogin(*item))
+		fullUserInfo.Childs, err = getChildList(userProvider, userId)
+		if err != nil {
+			log.Errorf("Error: %s", err.Error())
+			response.InternalServerError()
+			return
 		}
 
-		fullUserInfo.Childs = childUsersAndLoginList
+		fullUserInfo.HotSwitch, err = getHotSwitchFromUser(userProvider, userId)
+		if err != nil {
+			log.Errorf("Error: %s", err.Error())
+			response.InternalServerError()
+			return
+		}
 
 		response.OKWithData(fullUserInfo)
 	}
+}
+
+func getHotSwitchFromUser(userProvider userGetter, userId int) ([]e.UserIdAndLogin, error) {
+	hotSwitch, err := userProvider.GetHotSwitch(userId)
+	if err != nil {
+		return nil, err
+	}
+
+	var hotSwitchList []e.UserIdAndLogin
+
+	for _, item := range hotSwitch {
+		hotSwitchList = append(hotSwitchList, e.ConvertUserToUserLogin(*item))
+	}
+	return hotSwitchList, nil
+
+}
+
+func getCurrentUserRightsWithDescription(userProvider userGetter, currentUserId int, rightsService *rights.Service) ([]e.Right, error) {
+
+	currentUser, err := userProvider.GetById(currentUserId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	currentUserRightsWithDescriptions, err := rightsService.GetByUserRights(currentUser.Rights)
+
+	if err != nil {
+		return nil, err
+	}
+	return *currentUserRightsWithDescriptions, nil
+}
+
+func getUserNavigation(navigationProvider navigationProvider, currentUserId int, userId int) ([]e.NavigationInfoPage, error) {
+	currentUserNavigation, err := navigationProvider.Get(currentUserId)
+	if err != nil {
+		return nil, err
+	}
+
+	searchUserAvailableNavigation, err := navigationProvider.Get(userId)
+	if err != nil {
+		return nil, err
+	}
+
+	var shortNavigationInfo []e.NavigationInfoPage
+
+	for _, v := range *currentUserNavigation {
+		elem := e.NavigationInfoPage{
+			Id:      v.Id,
+			Title:   v.Title,
+			Enabled: false,
+		}
+		for _, vv := range *searchUserAvailableNavigation {
+			if v.Id == vv.Id {
+				elem.Enabled = true
+			}
+		}
+		shortNavigationInfo = append(shortNavigationInfo, elem)
+	}
+	return shortNavigationInfo, nil
+}
+
+func getChildList(userProvider userGetter, userId int) ([]e.UserIdAndLogin, error) {
+
+	parentId, err := userProvider.GetParentId(userId)
+	if err != nil {
+		return nil, err
+	}
+
+	childUsers, err := userProvider.GetChild(parentId)
+	if err != nil {
+		return nil, err
+	}
+
+	var childUsersAndLoginList []e.UserIdAndLogin
+
+	for _, item := range childUsers {
+		childUsersAndLoginList = append(childUsersAndLoginList, e.ConvertUserToUserLogin(*item))
+	}
+	return childUsersAndLoginList, nil
 }

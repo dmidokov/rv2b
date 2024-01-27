@@ -57,9 +57,7 @@ func (s *Service) Create(orgCreator OrgCreator, userProvider UserProvider) http.
 		err := json.NewDecoder(r.Body).Decode(&orgData)
 
 		if err != nil {
-			errorText := "При декодировании данных авторизации произошла ошибка"
-			log.Errorf(errorText+": %s", err.Error())
-			http.Error(w, errorText, http.StatusInternalServerError)
+			response.JsonDecodeError()
 			return
 		}
 
@@ -68,21 +66,15 @@ func (s *Service) Create(orgCreator OrgCreator, userProvider UserProvider) http.
 			Host: strings.Trim(orgData.Host, " "),
 		}
 
-		org, err := orgCreator.GetByHostName(newOrganization.Host)
+		_, err = orgCreator.GetByHostName(newOrganization.Host)
 		if err != nil {
 			if err.Error() == pgx.ErrNoRows.Error() {
-				log.Warning("NO")
+				log.Info("Creating organization is not created before")
 			} else {
 				log.Errorf("Duplicate")
 				response.InternalServerError()
 				return
 			}
-		}
-
-		if org != nil {
-			log.Warning("Organization exist")
-			response.WithError("OrganizationIsAlreadyExist")
-			return
 		}
 
 		userData := CreateUserRequest{}

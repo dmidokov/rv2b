@@ -108,24 +108,37 @@ CREATE TABLE IF NOT EXISTS remonttiv2.hot_switch_relations
 )
     TABLESPACE pg_default;
 
-INSERT INTO remonttiv2.users (user_id, organization_id, user_name, user_password, actions_code, rights_1, create_time,
-                              update_time, account_icon, user_type, start_page)
-VALUES (1, 1, 'admin', '$2a$14$adZQlMqeE3qgAgGv.25PhuREomuM.zjCVIrLdoEUCpruv5g6DKEUi', 0, 2147483647, 0, 0, '', 0, '/');
-INSERT INTO remonttiv2.users (user_id, organization_id, user_name, user_password, actions_code, rights_1, create_time,
-                              update_time, account_icon, user_type, start_page)
-VALUES (2, 2, 'remontti', '$2a$14$EA3./8raO12dFE6tj/6C4evQIig3AlVRDkFuVsQJiJsAjWX7PAw2.', 0, 901, 1697057352,
-        1697057352, '/icons/upload-2287900351.png', 0, '/');
-INSERT INTO remonttiv2.users (user_id, organization_id, user_name, user_password, actions_code, rights_1, create_time,
-                              update_time, account_icon, user_type, start_page)
-VALUES (3, 2, 'employee', '$2a$14$NorbQj63.CseGzjcLs4p9.8zFIDusG/ZIAMMua9j3RV1aSvDjfj26', 0, 128, 1704540255,
-        1704540255,
-        '/icons/img.png', 0, '#/branchselector');
+
+
+
+
+
+
+
+INSERT INTO remonttiv2.users (user_id, organization_id, user_name, user_password, actions_code, rights_1, create_time, update_time, account_icon, user_type, start_page) VALUES (1, 1, 'admin', '$2a$14$adZQlMqeE3qgAgGv.25PhuREomuM.zjCVIrLdoEUCpruv5g6DKEUi', 0, 2147483647, 0, 0, '', 0, '/');
+INSERT INTO remonttiv2.users (user_id, organization_id, user_name, user_password, actions_code, rights_1, create_time, update_time, account_icon, user_type, start_page) VALUES (3, 2, 'employee', '$2a$14$NorbQj63.CseGzjcLs4p9.8zFIDusG/ZIAMMua9j3RV1aSvDjfj26', 0, 128, 1704540255, 1704540255, '/icons/img.png', 0, '#/branchselector');
+INSERT INTO remonttiv2.users (user_id, organization_id, user_name, user_password, actions_code, rights_1, create_time, update_time, account_icon, user_type, start_page) VALUES (4, 2, 'l.markova', '$2a$14$Exm9En.WXP7.n1n2dLPP...OftXwsH8kDNzPVKV4Rte207a/u9rcG', 0, 0, 1706374247, 1706374247, '/icons/account.svg', 1, '/');
+INSERT INTO remonttiv2.users (user_id, organization_id, user_name, user_password, actions_code, rights_1, create_time, update_time, account_icon, user_type, start_page) VALUES (5, 2, 't.bespalova', '$2a$14$l.Yh7el.4SkW5DrI7RJjCOAVnTwK5y43t54jSrWyXGp/O3mrjayzq', 0, 0, 1706374258, 1706374258, '/icons/account.svg', 1, '/');
+INSERT INTO remonttiv2.users (user_id, organization_id, user_name, user_password, actions_code, rights_1, create_time, update_time, account_icon, user_type, start_page) VALUES (6, 2, 'r.tagirova', '$2a$14$qEdu6tI.1TAHdWttlnxhCeF9VQsyw1ACA5iPn5Z2NUq3hM32lYARS', 0, 0, 1706374271, 1706374271, '/icons/account.svg', 1, '/');
+INSERT INTO remonttiv2.users (user_id, organization_id, user_name, user_password, actions_code, rights_1, create_time, update_time, account_icon, user_type, start_page) VALUES (2, 2, 'remontti', '$2a$14$EA3./8raO12dFE6tj/6C4evQIig3AlVRDkFuVsQJiJsAjWX7PAw2.', 0, 8085, 1697057352, 1706374309, '/icons/upload-2287900351.png', 0, '/');
+
+
+
+
+
+
 
 INSERT INTO remonttiv2.organizations
 (organization_id, organization_name, host, create_time, update_time, creator)
 VALUES (1, 'control', 'control.remontti.site', 0, 0, 1),
        (2, 'remontti', 'work.remontti.site', 1697057352, 1697057352, 1),
        (3, 'test', 'test.remontti.site', 0, 0, 1);
+
+
+
+
+
+
 
 INSERT INTO remonttiv2.navigation
     (navigation_id, title, tooltip_text, navigation_group, icon, link)
@@ -136,23 +149,38 @@ VALUES (1, 'organizations', 'organization_tooltip', 1, '/icons/organization.svg'
        (5, 'users', 'branch_tooltip', 1, '/icons/users.svg', '#/users'),
        (6, 'money', 'branch_tooltip', 1, '/icons/wallet.svg', '#/money');
 
+
+
+
+
+
+
 INSERT INTO remonttiv2.right_category_ids
     (category_title, category_id)
 VALUES ('navigation', 1);
 
 
-INSERT INTO remonttiv2.rights
-    (user_id, entity_id, entity_group)
-VALUES (1, 1, 1),
-       (1, 3, 1),
-       (1, 5, 1),
-       (1, 6, 1),
-       (1, 4, 1),
-       (1, 2, 1),
-       (2, 2, 1),
-       (2, 4, 1),
-       (2, 5, 1),
-       (2, 3, 1);
+
+
+
+
+
+
+INSERT INTO remonttiv2.rights (user_id, entity_id, entity_group) VALUES (1, 1, 1);
+INSERT INTO remonttiv2.rights (user_id, entity_id, entity_group) VALUES (1, 3, 1);
+INSERT INTO remonttiv2.rights (user_id, entity_id, entity_group) VALUES (1, 5, 1);
+INSERT INTO remonttiv2.rights (user_id, entity_id, entity_group) VALUES (1, 6, 1);
+INSERT INTO remonttiv2.rights (user_id, entity_id, entity_group) VALUES (1, 4, 1);
+INSERT INTO remonttiv2.rights (user_id, entity_id, entity_group) VALUES (1, 2, 1);
+INSERT INTO remonttiv2.rights (user_id, entity_id, entity_group) VALUES (2, 2, 1);
+INSERT INTO remonttiv2.rights (user_id, entity_id, entity_group) VALUES (2, 4, 1);
+INSERT INTO remonttiv2.rights (user_id, entity_id, entity_group) VALUES (2, 5, 1);
+INSERT INTO remonttiv2.rights (user_id, entity_id, entity_group) VALUES (2, 3, 1);
+
+
+
+
+
 
 
 INSERT INTO remonttiv2.rights_names
@@ -169,7 +197,12 @@ VALUES ('ADD_USER', pow(2, 0)),
        ('DELETE_BRANCH_LIST', pow(2, 9)),
        ('EDIT_USER_RIGHTS', pow(2, 10)),
        ('EDIT_USER_NAVIGATION', pow(2, 11)),
-       ('SET_USER_HOT_SWITCH', pow(2, 12));
+       ('EDIT_USER_HOT_SWITCH', pow(2, 12));
+
+
+
+
+
 
 INSERT INTO remonttiv2.branches
 (branch_id, organization_id, branch_name, address, phone, work_time, create_time, update_time)
@@ -180,6 +213,10 @@ VALUES (2, 2, 'master', 'Ленина 20', '71234567890', '11-19', 1704535350, 1
 INSERT INTO remonttiv2.branches (branch_id, organization_id, branch_name, address, phone, work_time, create_time,
                                  update_time)
 VALUES (3, 2, 'maxi', 'Ленина 14', '78846464466', '10-21', 1704669486, 1704669486);
+
+
+
+
 
 
 INSERT INTO remonttiv2.user_branches (user_id, branch_id)
@@ -195,17 +232,32 @@ VALUES (2, 2);
 INSERT INTO remonttiv2.user_branches (user_id, branch_id)
 VALUES (2, 3);
 
-INSERT INTO remonttiv2.users_create_relations (creator_id, created_id)
-VALUES (1, 2);
-INSERT INTO remonttiv2.users_create_relations (creator_id, created_id)
-VALUES (2, 3);
-INSERT INTO remonttiv2.users_create_relations (creator_id, created_id)
-VALUES (0, 1);
+
+
+
+
+INSERT INTO remonttiv2.users_create_relations (creator_id, created_id) VALUES (1, 2);
+INSERT INTO remonttiv2.users_create_relations (creator_id, created_id) VALUES (2, 3);
+INSERT INTO remonttiv2.users_create_relations (creator_id, created_id) VALUES (0, 1);
+INSERT INTO remonttiv2.users_create_relations (creator_id, created_id) VALUES (2, 4);
+INSERT INTO remonttiv2.users_create_relations (creator_id, created_id) VALUES (2, 5);
+INSERT INTO remonttiv2.users_create_relations (creator_id, created_id) VALUES (2, 6);
+
+
+
+
 
 INSERT INTO remonttiv2.entity_group_to_entity_name (group_id, entity_name)
 VALUES (1, 'Navigation');
+
+INSERT INTO remonttiv2.hot_switch_relations (from_user, to_user) VALUES (3, 4);
+
+
+
+
 
 SELECT setval('remonttiv2.users_user_id_seq', 100);
 SELECT setval('remonttiv2.organizations_organization_id_seq', 100);
 SELECT setval('remonttiv2.navigation_navigation_id_seq', 100);
 SELECT setval('remonttiv2.branches_branch_id_seq', 100);
+
