@@ -89,17 +89,19 @@ func (hm *Service) Router() (*mux.Router, error) {
 
 	router.HandleFunc("/api/branches", hm.loggingMiddleware(branchHandler.Get(branchService, userService))).Methods(http.MethodGet, http.MethodOptions)
 	router.HandleFunc("/api/branches", hm.loggingMiddleware(branchHandler.Create(branchService, userService))).Methods(http.MethodPut, http.MethodOptions)
-	router.HandleFunc("/api/branches/{id}", hm.loggingMiddleware(branchHandler.DeleteBranch(branchService, userService))).Methods(http.MethodDelete, http.MethodOptions)
+	router.HandleFunc("/api/branches/{id}[0-9]+", hm.loggingMiddleware(branchHandler.DeleteBranch(branchService, userService))).Methods(http.MethodDelete, http.MethodOptions)
 	router.HandleFunc("/api/branches/active/{branchId}", hm.loggingMiddleware(branchHandler.SetActiveBranch(userService, hm.CookieStore))).Methods(http.MethodPost, http.MethodOptions)
 
 	router.HandleFunc("/api/users", hm.loggingMiddleware(userHandler.GetUsers(userService))).Methods(http.MethodGet, http.MethodOptions)
 	router.HandleFunc("/api/users", hm.loggingMiddleware(userHandler.Create(userService))).Methods(http.MethodPut, http.MethodOptions)
 	router.HandleFunc("/api/users/icon", hm.loggingMiddleware(userHandler.GetUserIcon(userService))).Methods(http.MethodGet, http.MethodOptions)
 	router.HandleFunc("/api/users/{id:[0-9]+}", hm.loggingMiddleware(userHandler.DeleteUser(userService))).Methods(http.MethodDelete, http.MethodOptions)
-	router.HandleFunc("/api/users/{id}", hm.loggingMiddleware(userHandler.GetUser(userService, navigationService))).Methods(http.MethodGet, http.MethodOptions)
+	router.HandleFunc("/api/users/{id:[0-9]+}", hm.loggingMiddleware(userHandler.GetUser(userService, navigationService))).Methods(http.MethodGet, http.MethodOptions)
 	router.HandleFunc("/api/users/update", hm.loggingMiddleware(userHandler.Update(userService, rightsService, navigationService))).Methods(http.MethodPost, http.MethodOptions)
 	router.HandleFunc("/api/users/switcher", hm.loggingMiddleware(userHandler.AddToSwitcher(userService, rightsService))).Methods(http.MethodPut, http.MethodOptions)
 	router.HandleFunc("/api/users/switcher", hm.loggingMiddleware(userHandler.RemoveFromSwitcher(userService, rightsService))).Methods(http.MethodDelete, http.MethodOptions)
+	router.HandleFunc("/api/users/switcher", hm.loggingMiddleware(userHandler.GetSwitcher(userService, rightsService))).Methods(http.MethodGet, http.MethodOptions)
+	router.HandleFunc("/api/users/switcher/switch", hm.loggingMiddleware(userHandler.GetSwitcher(userService, rightsService))).Methods(http.MethodGet, http.MethodOptions)
 
 	router.HandleFunc("/sse/{folder}", hm.sseHandler())
 	router.HandleFunc("/send/{event}/{client}", hm.sendMessage())

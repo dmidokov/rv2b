@@ -23,6 +23,12 @@ type UserShort struct {
 	StartPage  string `json:"startPage"`
 }
 
+type UserSwitcher struct {
+	Id       int    `json:"id,omitempty"`
+	UserName string `json:"userName,omitempty"`
+	Icon     string `json:"icon,omitempty"`
+}
+
 type UserIcon struct {
 	ImageName string `json:"image-name"`
 }

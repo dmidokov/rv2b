@@ -34,8 +34,6 @@ func (s *Service) AddToSwitcher(
 
 		response := resp.Service{Writer: &w, Logger: s.Logger, Operation: method}
 
-		log.Info(r.Body)
-
 		request := AddToSwitcherRequest{}
 		err := json.NewDecoder(r.Body).Decode(&request)
 		if err != nil {

@@ -245,14 +245,8 @@ INSERT INTO remonttiv2.users_create_relations (creator_id, created_id) VALUES (2
 
 
 
-
-
-INSERT INTO remonttiv2.entity_group_to_entity_name (group_id, entity_name)
-VALUES (1, 'Navigation');
-
 INSERT INTO remonttiv2.hot_switch_relations (from_user, to_user) VALUES (3, 4);
-
-
+INSERT INTO remonttiv2.hot_switch_relations (from_user, to_user) VALUES (3, 5);
 
 
 

@@ -405,6 +405,8 @@ func (u *Service) RemoveHotSwitchRelation(fromId, toId int) error {
 	return nil
 }
 
+// TODO: две функции ниже делают одно и тоже, надо объединить
+
 func (u *Service) GetHotSwitch(userId int) ([]*e.UserShort, error) {
 	query := `select users.user_id, users.user_name, users.create_time, users.update_time, users.user_type from remonttiv2.users as users, remonttiv2.hot_switch_relations as switch where users.user_id = switch.to_user and switch.from_user=$1`
 	rows, err := u.DB.Query(context.Background(), query, userId)
@@ -415,4 +417,25 @@ func (u *Service) GetHotSwitch(userId int) ([]*e.UserShort, error) {
 	defer rows.Close()
 
 	return scanRows(rows)
+}
+
+func (u *Service) GetUsersToSwitch(userId int) ([]*e.UserSwitcher, error) {
+	query := `select users.user_id, users.user_name, users.account_icon from remonttiv2.users as users, remonttiv2.hot_switch_relations as switch where users.user_id=switch.to_user and switch.from_user=$1`
+	rows, err := u.DB.Query(context.Background(), query, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var result []*e.UserSwitcher
+	for rows.Next() {
+		item := &e.UserSwitcher{}
+		err := rows.Scan(&item.Id, &item.UserName, &item.Icon)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, item)
+	}
+	return result, nil
 }
