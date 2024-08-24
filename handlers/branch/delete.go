@@ -62,6 +62,7 @@ func (s *Service) DeleteBranch(branchProvider DeleteProvider, userProvider userP
 			response.OK()
 			return
 		}
+		s.Logger.Warning("not allowed")
 		response.NotAllowed()
 	}
 }

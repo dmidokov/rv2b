@@ -24,6 +24,7 @@ func (s *Service) GetSwitcher(
 
 		log := s.Logger
 		method := "api.user.UpdateUserRights"
+		log.Info(method)
 
 		response := resp.Service{Writer: &w, Logger: s.Logger, Operation: method}
 
@@ -34,7 +35,6 @@ func (s *Service) GetSwitcher(
 			return
 		}
 
-		log.Info(currentUserId)
 		// TODO: тут еще надо проверить, что пользователи потомки одного родителя ???
 		userSwitcher, err := userProvider.GetUsersToSwitch(currentUserId)
 		if err != nil {

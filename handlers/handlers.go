@@ -92,16 +92,32 @@ func (hm *Service) Router() (*mux.Router, error) {
 	router.HandleFunc("/api/branches/{id}[0-9]+", hm.loggingMiddleware(branchHandler.DeleteBranch(branchService, userService))).Methods(http.MethodDelete, http.MethodOptions)
 	router.HandleFunc("/api/branches/active/{branchId}", hm.loggingMiddleware(branchHandler.SetActiveBranch(userService, hm.CookieStore))).Methods(http.MethodPost, http.MethodOptions)
 
-	router.HandleFunc("/api/users", hm.loggingMiddleware(userHandler.GetUsers(userService))).Methods(http.MethodGet, http.MethodOptions)
-	router.HandleFunc("/api/users", hm.loggingMiddleware(userHandler.Create(userService))).Methods(http.MethodPut, http.MethodOptions)
-	router.HandleFunc("/api/users/icon", hm.loggingMiddleware(userHandler.GetUserIcon(userService))).Methods(http.MethodGet, http.MethodOptions)
-	router.HandleFunc("/api/users/{id:[0-9]+}", hm.loggingMiddleware(userHandler.DeleteUser(userService))).Methods(http.MethodDelete, http.MethodOptions)
-	router.HandleFunc("/api/users/{id:[0-9]+}", hm.loggingMiddleware(userHandler.GetUser(userService, navigationService))).Methods(http.MethodGet, http.MethodOptions)
-	router.HandleFunc("/api/users/update", hm.loggingMiddleware(userHandler.Update(userService, rightsService, navigationService))).Methods(http.MethodPost, http.MethodOptions)
-	router.HandleFunc("/api/users/switcher", hm.loggingMiddleware(userHandler.AddToSwitcher(userService, rightsService))).Methods(http.MethodPut, http.MethodOptions)
-	router.HandleFunc("/api/users/switcher", hm.loggingMiddleware(userHandler.RemoveFromSwitcher(userService, rightsService))).Methods(http.MethodDelete, http.MethodOptions)
-	router.HandleFunc("/api/users/switcher", hm.loggingMiddleware(userHandler.GetSwitcher(userService, rightsService))).Methods(http.MethodGet, http.MethodOptions)
-	router.HandleFunc("/api/users/switcher/switch", hm.loggingMiddleware(userHandler.GetSwitcher(userService, rightsService))).Methods(http.MethodGet, http.MethodOptions)
+	//router.HandleFunc("/api/users", hm.loggingMiddleware(userHandler.GetUsers(userService))).Methods(http.MethodGet, http.MethodOptions)
+	//router.HandleFunc("/api/users", hm.loggingMiddleware(userHandler.Create(userService))).Methods(http.MethodPut, http.MethodOptions)
+	//router.HandleFunc("/api/users/icon", hm.loggingMiddleware(userHandler.GetUserIcon(userService))).Methods(http.MethodGet, http.MethodOptions)
+	//router.HandleFunc("/api/users/{id:[0-9]+}", hm.loggingMiddleware(userHandler.DeleteUser(userService))).Methods(http.MethodDelete, http.MethodOptions)
+	//router.HandleFunc("/api/users/{id:[0-9]+}", hm.loggingMiddleware(userHandler.GetUser(userService, navigationService))).Methods(http.MethodGet, http.MethodOptions)
+	//router.HandleFunc("/api/users/update", hm.loggingMiddleware(userHandler.Update(userService, rightsService, navigationService))).Methods(http.MethodPost, http.MethodOptions)
+	//router.HandleFunc("/api/users/switcher", hm.loggingMiddleware(userHandler.AddToSwitcher(userService, rightsService))).Methods(http.MethodPut, http.MethodOptions)
+	//router.HandleFunc("/api/users/switcher", hm.loggingMiddleware(userHandler.RemoveFromSwitcher(userService, rightsService))).Methods(http.MethodDelete, http.MethodOptions)
+	//router.HandleFunc("/api/users/switcher", hm.loggingMiddleware(userHandler.GetSwitcher(userService, rightsService))).Methods(http.MethodGet, http.MethodOptions)
+	//router.HandleFunc("/api/users/switcher/switch", hm.loggingMiddleware(userHandler.GetSwitcher(userService, rightsService))).Methods(http.MethodGet, http.MethodOptions)
+
+	userRouter := router.
+		PathPrefix("/api/users").
+		Subrouter()
+
+	userRouter.Use(hm.loggingMiddleware1)
+	userRouter.HandleFunc("", userHandler.GetUsers(userService)).Methods(http.MethodGet)
+	userRouter.HandleFunc("", userHandler.Create(userService)).Methods(http.MethodPut)
+	userRouter.HandleFunc("/icon", userHandler.GetUserIcon(userService)).Methods(http.MethodGet)
+	userRouter.HandleFunc("/{id:[0-9]+}", userHandler.DeleteUser(userService)).Methods(http.MethodDelete)
+	userRouter.HandleFunc("/{id:[0-9]+}", userHandler.GetUser(userService, navigationService)).Methods(http.MethodGet)
+	userRouter.HandleFunc("/update", userHandler.Update(userService, rightsService, navigationService)).Methods(http.MethodPost)
+	userRouter.HandleFunc("/switcher", userHandler.AddToSwitcher(userService, rightsService)).Methods(http.MethodPut)
+	userRouter.HandleFunc("/switcher", userHandler.RemoveFromSwitcher(userService, rightsService)).Methods(http.MethodDelete)
+	userRouter.HandleFunc("/switcher", userHandler.GetSwitcher(userService, rightsService)).Methods(http.MethodGet)
+	userRouter.HandleFunc("/switcher/switch", userHandler.GetSwitcher(userService, rightsService)).Methods(http.MethodGet)
 
 	router.HandleFunc("/sse/{folder}", hm.sseHandler())
 	router.HandleFunc("/send/{event}/{client}", hm.sendMessage())
@@ -111,6 +127,9 @@ func (hm *Service) Router() (*mux.Router, error) {
 		router.Use(mux.CORSMethodMiddleware(router))
 		router.Use(corsMiddleware)
 	}
+
+	//for()
+
 	return router, nil
 
 }
@@ -123,6 +142,7 @@ func (hm *Service) loggingMiddleware(next http.HandlerFunc) http.HandlerFunc {
 
 		method := "Login middleware"
 		log := hm.Logger
+		log.Info(r.RequestURI)
 
 		responses := resp.Service{Writer: &w, Logger: log, Operation: method}
 
@@ -140,6 +160,31 @@ func (hm *Service) loggingMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+func (hm *Service) loggingMiddleware1(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodOptions {
+			return
+		}
+
+		method := "Login middleware"
+		log := hm.Logger
+		log.Info(r.RequestURI)
+		responses := resp.Service{Writer: &w, Logger: log, Operation: method}
+
+		if authenticated, ok := hm.CookieStore.Get(r, "authenticated"); ok && authenticated.(bool) {
+			hm.CookieStore.Save(r, w, make(map[string]interface{}))
+			if r.URL.String() == "/" {
+				w.Header().Set("cache-control", "no-cache")
+			}
+		} else {
+			log.Warning("User is not authorized")
+			responses.Unauthorized()
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
 func corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "http://control.remontti.site:5173")
@@ -154,6 +199,7 @@ func Redirect(w http.ResponseWriter, r *http.Request) {
 }
 
 func (hm *Service) handleFileServer(dir, prefix string) http.HandlerFunc {
+	hm.Logger.Info(dir)
 	fs := http.FileServer(http.Dir(dir))
 	realHandler := http.StripPrefix(prefix, fs).ServeHTTP
 	return func(w http.ResponseWriter, req *http.Request) {

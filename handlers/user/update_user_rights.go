@@ -5,6 +5,7 @@ import (
 	"github.com/dmidokov/rv2/lib"
 	e "github.com/dmidokov/rv2/lib/entitie"
 	resp "github.com/dmidokov/rv2/response"
+	"github.com/sirupsen/logrus"
 	"math"
 	"net/http"
 )
@@ -40,7 +41,7 @@ func (s *Service) Update(
 			return
 		}
 
-		_ = s.Logger
+		log := s.Logger
 		method := "api.user.UpdateUserRights"
 
 		response := resp.Service{Writer: &w, Logger: s.Logger, Operation: method}
@@ -63,9 +64,9 @@ func (s *Service) Update(
 
 		switch field {
 		case "rights":
-			updateRights(response, request, r, userProvider, rightsProvider)
+			updateRights(response, request, r, userProvider, rightsProvider, log)
 		case "navigation":
-			updateNavigation(response, request, r, userProvider, rightsProvider, navigationProvider)
+			updateNavigation(response, request, r, userProvider, rightsProvider, navigationProvider, log)
 		default:
 			response.WrongParameter()
 		}
@@ -79,25 +80,30 @@ func updateRights(
 	r *http.Request,
 	userProvider userRightsUpdater,
 	rightsProvider rightsSetter,
+	logger *logrus.Logger,
 ) {
 	currentUserId := userProvider.GetUserIdFromSession(r)
 	if currentUserId == 0 {
+		logger.Info("unauthorized")
 		response.Unauthorized()
 		return
 	}
 
 	currentUser, err := userProvider.GetById(currentUserId)
 	if err != nil {
+		logger.Error("internal server error")
 		response.InternalServerError()
 	}
 
 	userToUpdate, err := userProvider.GetById(request.UserId)
 	if err != nil {
+		logger.Info("user not found")
 		response.UserNotFound()
 		return
 	}
 
 	if !rightsProvider.CheckUserRight(currentUser, lib.EditUserRights) {
+		logger.Info("not allowed")
 		response.NotAllowed()
 		return
 	}
@@ -110,6 +116,7 @@ func updateRights(
 
 	_, err = userProvider.UpdateUser(userToUpdate)
 	if err != nil {
+		logger.Error("internal server error")
 		response.InternalServerError()
 		return
 	}
@@ -123,6 +130,7 @@ func updateNavigation(
 	userProvider userRightsUpdater,
 	rightsProvider rightsSetter,
 	navigationProvider navigationUpdater,
+	logger *logrus.Logger,
 ) {
 	currentUserId := userProvider.GetUserIdFromSession(r)
 	if currentUserId == 0 {
@@ -145,6 +153,7 @@ func updateNavigation(
 	// пользователю можно дать эту навигацию, то есть что тот кто устанавливает
 	// имеет у себя такое поле навишации
 	if !rightsProvider.CheckUserRight(currentUser, lib.EditUserNavigation) {
+		logger.Info("not allowed")
 		response.NotAllowed()
 		return
 	}

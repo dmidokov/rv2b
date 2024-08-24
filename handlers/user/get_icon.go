@@ -20,6 +20,8 @@ func (s *Service) GetUserIcon(userIconProvider userIconProvider) http.HandlerFun
 		method := "api.users.getIcon"
 		response := resp.Service{Writer: &w, Logger: s.Logger, Operation: method}
 
+		s.Logger.Info(method)
+
 		userId := userIconProvider.GetUserIdFromSession(r)
 		if userId == 0 {
 			response.Unauthorized()
