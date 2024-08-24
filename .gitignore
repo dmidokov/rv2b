@@ -9,5 +9,6 @@ dockerfile
 .idea
 r
 ./Makefile
+Makefile
 rv2
 migrations/000001_tables.up.sql
