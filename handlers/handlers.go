@@ -71,7 +71,7 @@ func (hm *Service) Router() (*mux.Router, error) {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/", hm.handleFileServer(hm.Config.RootPathWeb, "")).Methods(http.MethodGet, http.MethodOptions)
-	router.HandleFunc("/temp/{fileName}.{ext}", hm.handleFileServer("/bin/temp", "/temp/")).Methods(http.MethodGet, http.MethodOptions)
+	router.HandleFunc("/temp/{fileName}.{ext}", hm.handleFileServer(hm.Config.TempFolder, "/temp/")).Methods(http.MethodGet, http.MethodOptions)
 	router.HandleFunc("/{folder}/{fileName}.{ext}", hm.handleFileServer(hm.Config.RootPathWeb, "")).Methods(http.MethodGet, http.MethodOptions)
 
 	router.HandleFunc("/auth", authHandler.SignIn(userService, orgService)).Methods(http.MethodPost, http.MethodOptions)
