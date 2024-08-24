@@ -25,7 +25,10 @@ func ConnectToDB(dbHost, dbPort, dbUser, dbPassword, dbName string) (*pgxpool.Po
 
 }
 
-func DropSchema(pool *pgxpool.Pool) error {
+func DropSchema(pool *pgxpool.Pool, dbName string) error {
+
+	var DropSchemaSQL = `DROP SCHEMA ` + dbName + ` CASCADE; CREATE SCHEMA ` + dbName + `;`
+
 	_, err := pool.Exec(context.Background(), DropSchemaSQL)
 	if err != nil {
 		return err

@@ -30,9 +30,9 @@ func main() {
 
 	if cfg.DeleteTablesBeforeStart == 1 {
 		logger.Info("Удаление схемы")
-		err := db.DropSchema(conn)
+		err := db.DropSchema(conn, cfg.DbName)
 		if err != nil {
-			logger.Fatal("Can't drop schema")
+			logger.Fatal("Can't drop schema " + cfg.DbName + ": " + err.Error())
 		}
 	}
 

@@ -111,10 +111,6 @@ CREATE TABLE IF NOT EXISTS RV2_DB_NAME.hot_switch_relations
 
 
 
-
-
-
-
 INSERT INTO RV2_DB_NAME.users (user_id, organization_id, user_name, user_password, actions_code, rights_1, create_time, update_time, account_icon, user_type, start_page) VALUES (1, 1, 'admin', '$2a$14$adZQlMqeE3qgAgGv.25PhuREomuM.zjCVIrLdoEUCpruv5g6DKEUi', 0, 2147483647, 0, 0, '', 0, '/');
 INSERT INTO RV2_DB_NAME.users (user_id, organization_id, user_name, user_password, actions_code, rights_1, create_time, update_time, account_icon, user_type, start_page) VALUES (3, 2, 'employee', '$2a$14$NorbQj63.CseGzjcLs4p9.8zFIDusG/ZIAMMua9j3RV1aSvDjfj26', 0, 128, 1704540255, 1704540255, '/icons/img.png', 0, '#/branchselector');
 INSERT INTO RV2_DB_NAME.users (user_id, organization_id, user_name, user_password, actions_code, rights_1, create_time, update_time, account_icon, user_type, start_page) VALUES (4, 2, 'l.markova', '$2a$14$Exm9En.WXP7.n1n2dLPP...OftXwsH8kDNzPVKV4Rte207a/u9rcG', 0, 0, 1706374247, 1706374247, '/icons/account.svg', 1, '/');
@@ -130,8 +126,8 @@ INSERT INTO RV2_DB_NAME.users (user_id, organization_id, user_name, user_passwor
 
 INSERT INTO RV2_DB_NAME.organizations
 (organization_id, organization_name, host, create_time, update_time, creator)
-VALUES (1, 'control', 'control.remontti.site', 0, 0, 1),
-       (2, 'remontti', 'work.remontti.site', 1697057352, 1697057352, 1),
+VALUES (1, 'control', 'control.RV2_DOMAIN_NAME', 0, 0, 1),
+       (2, 'remontti', 'work.RV2_DOMAIN_NAME', 1697057352, 1697057352, 1),
        (3, 'test', 'test.RV2_DOMAIN_NAME', 0, 0, 1);
 
 
