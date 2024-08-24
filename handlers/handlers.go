@@ -259,10 +259,10 @@ func (hm *Service) uploadImage() http.HandlerFunc {
 		var imageBasePath string
 
 		if isIcon != "" {
-			tempFile, err = os.CreateTemp("/bin/temp", "upload-*.png")
+			tempFile, err = os.CreateTemp(hm.Config.TempFolder, "upload-*.png")
 			imageBasePath = "/temp/"
 		} else {
-			tempFile, err = os.CreateTemp("/bin/temp/", "upload-*.png")
+			tempFile, err = os.CreateTemp(hm.Config.TempFolder, "upload-*.png")
 			imageBasePath = "/temp/"
 		}
 

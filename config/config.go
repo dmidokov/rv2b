@@ -108,5 +108,9 @@ func LoadConfig() *Configuration {
 		log.Fatal("secrets path is empty")
 	}
 
+	if config.TempFolder, exist = os.LookupEnv(TempFolder); !exist {
+		config.TempFolder = "/bin/temp/"
+	}
+
 	return &config
 }

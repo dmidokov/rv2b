@@ -22,6 +22,7 @@ const (
 	SSLPort                 = "SSL_PORT"
 	MigrationPath           = "MIGRATION_PATH"
 	SecretsPath             = "SECRETS_PATH"
+	TempFolder              = "TEMP_FOLDER"
 )
 
 // Configuration Структура для хранения конфигруации
@@ -44,4 +45,5 @@ type Configuration struct {
 	SSLPort                 string `json:"ssl_port"`
 	MigrationPath           string `json:"migration_path"`
 	SecretsPath             string `json:"secrets_path"`
+	TempFolder              string `json:"temp_folder"`
 }
