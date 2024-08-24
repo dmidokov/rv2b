@@ -1,5 +1,6 @@
 /secrets
 /docker
+/migrations/000001_tables.up.sql
 docker/dockerfile
 .env
 ./main
@@ -11,4 +12,4 @@ r
 ./Makefile
 Makefile
 rv2
-migrations/000001_tables.up.sql
+/migrations/
