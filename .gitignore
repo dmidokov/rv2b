@@ -12,4 +12,5 @@ r
 ./Makefile
 Makefile
 rv2
-/migrations/
+/migrations/000001_tables.up.sql
+/migrations/000001_tables.down.sql
