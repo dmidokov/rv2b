@@ -112,5 +112,14 @@ func LoadConfig() *Configuration {
 		config.TempFolder = "/bin/temp/"
 	}
 
+	if value, exist := os.LookupEnv(MigrationOn); !exist {
+		config.MigrationON = 0
+	} else {
+		config.MigrationON, err = strconv.Atoi(value)
+		if err != nil {
+			log.Fatal("MIGRATION_ON key is wrong")
+		}
+	}
+
 	return &config
 }

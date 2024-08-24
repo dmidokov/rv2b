@@ -36,7 +36,9 @@ func main() {
 		}
 	}
 
-	migrations.Init(cfg)
+	if cfg.MigrationON == 1 {
+		migrations.Init(cfg)
+	}
 
 	store := cookie.New(cfg.SessionsSecret)
 

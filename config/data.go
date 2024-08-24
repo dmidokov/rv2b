@@ -23,6 +23,7 @@ const (
 	MigrationPath           = "MIGRATION_PATH"
 	SecretsPath             = "SECRETS_PATH"
 	TempFolder              = "TEMP_FOLDER"
+	MigrationOn             = "MIGRATION_ON"
 )
 
 // Configuration Структура для хранения конфигруации
@@ -46,4 +47,5 @@ type Configuration struct {
 	MigrationPath           string `json:"migration_path"`
 	SecretsPath             string `json:"secrets_path"`
 	TempFolder              string `json:"temp_folder"`
+	MigrationON             int    `json:"migration_on"`
 }

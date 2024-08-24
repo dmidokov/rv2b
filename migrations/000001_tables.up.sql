@@ -132,6 +132,9 @@ INSERT INTO remonttiv2.organizations
 (organization_id, organization_name, host, create_time, update_time, creator)
 VALUES (1, 'control', 'control.remontti.site', 0, 0, 1),
        (2, 'remontti', 'work.remontti.site', 1697057352, 1697057352, 1),
+       (3, 'test', 'test.remontti.site', 0, 0, 1),
+       (3, 'test', 'test.remontti.site', 0, 0, 1),
+       (3, 'test', 'test.remontti.site', 0, 0, 1);
        (3, 'test', 'test.remontti.site', 0, 0, 1);
 
 
