@@ -142,7 +142,6 @@ func (hm *Service) loggingMiddleware(next http.HandlerFunc) http.HandlerFunc {
 
 		method := "Login middleware"
 		log := hm.Logger
-		log.Info(r.RequestURI)
 
 		responses := resp.Service{Writer: &w, Logger: log, Operation: method}
 

@@ -29,7 +29,7 @@ func New(DB *pgxpool.Pool, CookieStore SessionStorage, Log *logrus.Logger) *Serv
 }
 
 func (o *Service) GetByHostName(hostName string) (*e.Organization, error) {
-	query := `select * from remonttiv2.organizations where host=$1`
+	query := "select * from organizations where host=$1"
 	row := o.DB.QueryRow(context.Background(), query, hostName)
 
 	organization := &e.Organization{}
@@ -51,7 +51,7 @@ func (o *Service) GetByHostName(hostName string) (*e.Organization, error) {
 }
 
 func (o *Service) GetAll() ([]*e.Organization, error) {
-	query := `select * from remonttiv2.organizations`
+	query := `select * from organizations`
 	rows, err := o.DB.Query(context.Background(), query)
 	if err != nil {
 		return nil, err
@@ -63,7 +63,7 @@ func (o *Service) GetAll() ([]*e.Organization, error) {
 
 func (o *Service) Create(org *e.Organization) (*e.Organization, error) {
 	query := `
-		INSERT INTO remonttiv2.organizations
+		INSERT INTO organizations
 			(organization_name, host, create_time, update_time, creator) 
 		VALUES
 			($1, $2, $3, $3, $4);`
@@ -97,7 +97,7 @@ func scanRows(rows pgx.Rows) ([]*e.Organization, error) {
 
 func (o *Service) Delete(orgId int) error {
 	query := `
-		DELETE FROM remonttiv2.organizations 
+		DELETE FROM organizations 
 		WHERE organization_id=$1`
 
 	tag, err := o.DB.Exec(context.Background(), query, orgId)
@@ -110,7 +110,7 @@ func (o *Service) Delete(orgId int) error {
 }
 
 func (o *Service) GetById(id int) (*e.Organization, error) {
-	query := `select * from remonttiv2.organizations where organization_id=$1`
+	query := `select * from organizations where organization_id=$1`
 	row := o.DB.QueryRow(context.Background(), query, id)
 
 	organization := &e.Organization{}

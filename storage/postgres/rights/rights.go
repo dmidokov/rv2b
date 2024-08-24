@@ -29,8 +29,7 @@ func (rg *Service) CheckUserRight(user *e.User, right int) bool {
 }
 
 func (rg *Service) GetRightsNamesByIds(ids []int) (*[]e.RightNameValue, error) {
-
-	query := `select name, value from remonttiv2.rights_names where 1=0 `
+	query := `select name, value from rights_names where 1=0 `
 
 	for _, v := range ids {
 		query += fmt.Sprintf("OR value=%s", strconv.Itoa(v))
@@ -60,7 +59,7 @@ func (rg *Service) GetRightsNamesByIds(ids []int) (*[]e.RightNameValue, error) {
 // Пользователям назначены права в таблице users в виде числа, данный метод вернет
 // указанные выше значения только для тех прав которые выставлены для пользователя
 func (rg *Service) GetByUserRights(rightsValue int) (*[]e.Right, error) {
-	query := "select * from remonttiv2.rights_names where value & $1 > 0"
+	query := "select * from rights_names where value & $1 > 0"
 
 	rows, err := rg.DB.Query(context.Background(), query, rightsValue)
 	if err != nil {
@@ -82,7 +81,7 @@ func (rg *Service) GetByUserRights(rightsValue int) (*[]e.Right, error) {
 }
 
 func (rg *Service) GetAvailableEntities(userId int, groupId int) (*[]e.Entities, error) {
-	query := `select * from remonttiv2.rights where user_id = $1 AND entity_group=$2`
+	query := `select * from rights where user_id = $1 AND entity_group=$2`
 	rows, err := rg.DB.Query(context.Background(), query, userId, groupId)
 
 	var result []e.Entities

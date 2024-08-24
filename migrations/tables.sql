@@ -4,7 +4,7 @@ CREATE SCHEMA IF NOT EXISTS RV2_DB_NAME;
 -- user_type
 --     0 - Сервисная/Управляющая учетка
 --     1 - Учетка сотрудников
-CREATE TABLE IF NOT EXISTS RV2_DB_NAME.users
+CREATE TABLE IF NOT EXISTS users
 (
     user_id         SERIAL                 NOT NULL,
     organization_id integer                NOT NULL,
@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS RV2_DB_NAME.users
 )
     TABLESPACE pg_default;
 
-CREATE TABLE IF NOT EXISTS RV2_DB_NAME.organizations
+CREATE TABLE IF NOT EXISTS Organizations
 (
     organization_id   SERIAL                 NOT NULL,
     organization_name character varying(50)  NOT NULL,
@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS RV2_DB_NAME.organizations
 )
     TABLESPACE pg_default;
 
-CREATE TABLE IF NOT EXISTS RV2_DB_NAME.navigation
+CREATE TABLE IF NOT EXISTS navigation
 (
     navigation_id    SERIAL                NOT NULL,
     title            character varying(50) NOT NULL,
@@ -44,14 +44,14 @@ CREATE TABLE IF NOT EXISTS RV2_DB_NAME.navigation
 )
     TABLESPACE pg_default;
 
-CREATE TABLE IF NOT EXISTS RV2_DB_NAME.right_category_ids
+CREATE TABLE IF NOT EXISTS right_category_ids
 (
     category_title character varying(50) NOT NULL,
     category_id    integer               NOT NULL
 )
     TABLESPACE pg_default;
 
-CREATE TABLE IF NOT EXISTS RV2_DB_NAME.rights
+CREATE TABLE IF NOT EXISTS rights
 (
     user_id      integer NOT NULL,
     entity_id    integer NOT NULL,
@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS RV2_DB_NAME.rights
 )
     TABLESPACE pg_default;
 
-CREATE TABLE IF NOT EXISTS RV2_DB_NAME.rights_names
+CREATE TABLE IF NOT EXISTS rights_names
 (
     right_id SERIAL                NOT NULL,
     name     character varying(30) NOT NULL,
@@ -67,7 +67,7 @@ CREATE TABLE IF NOT EXISTS RV2_DB_NAME.rights_names
 )
     TABLESPACE pg_default;
 
-CREATE TABLE IF NOT EXISTS RV2_DB_NAME.branches
+CREATE TABLE IF NOT EXISTS branches
 (
     branch_id       SERIAL                 NOT NULL,
     organization_id integer                NOT NULL,
@@ -80,28 +80,28 @@ CREATE TABLE IF NOT EXISTS RV2_DB_NAME.branches
 )
     TABLESPACE pg_default;
 
-CREATE TABLE IF NOT EXISTS RV2_DB_NAME.user_branches
+CREATE TABLE IF NOT EXISTS user_branches
 (
     user_id   integer NOT NULL,
     branch_id integer NOT NULL
 )
     TABLESPACE pg_default;
 
-CREATE TABLE IF NOT EXISTS RV2_DB_NAME.users_create_relations
+CREATE TABLE IF NOT EXISTS users_create_relations
 (
     creator_id integer NOT NULL,
     created_id integer NOT NULL
 )
     TABLESPACE pg_default;
 
-CREATE TABLE IF NOT EXISTS RV2_DB_NAME.entity_group_to_entity_name
+CREATE TABLE IF NOT EXISTS entity_group_to_entity_name
 (
     group_id    integer NOT NULL,
     entity_name character varying(40)
 )
     TABLESPACE pg_default;
 
-CREATE TABLE IF NOT EXISTS RV2_DB_NAME.hot_switch_relations
+CREATE TABLE IF NOT EXISTS hot_switch_relations
 (
     from_user integer NOT NULL,
     to_user   integer NOT NULL
@@ -111,12 +111,12 @@ CREATE TABLE IF NOT EXISTS RV2_DB_NAME.hot_switch_relations
 
 
 
-INSERT INTO RV2_DB_NAME.users (user_id, organization_id, user_name, user_password, actions_code, rights_1, create_time, update_time, account_icon, user_type, start_page) VALUES (1, 1, 'admin', '$2a$14$adZQlMqeE3qgAgGv.25PhuREomuM.zjCVIrLdoEUCpruv5g6DKEUi', 0, 2147483647, 0, 0, '', 0, '/');
-INSERT INTO RV2_DB_NAME.users (user_id, organization_id, user_name, user_password, actions_code, rights_1, create_time, update_time, account_icon, user_type, start_page) VALUES (3, 2, 'employee', '$2a$14$NorbQj63.CseGzjcLs4p9.8zFIDusG/ZIAMMua9j3RV1aSvDjfj26', 0, 128, 1704540255, 1704540255, '/icons/img.png', 0, '#/branchselector');
-INSERT INTO RV2_DB_NAME.users (user_id, organization_id, user_name, user_password, actions_code, rights_1, create_time, update_time, account_icon, user_type, start_page) VALUES (4, 2, 'l.markova', '$2a$14$Exm9En.WXP7.n1n2dLPP...OftXwsH8kDNzPVKV4Rte207a/u9rcG', 0, 0, 1706374247, 1706374247, '/icons/account.svg', 1, '/');
-INSERT INTO RV2_DB_NAME.users (user_id, organization_id, user_name, user_password, actions_code, rights_1, create_time, update_time, account_icon, user_type, start_page) VALUES (5, 2, 't.bespalova', '$2a$14$l.Yh7el.4SkW5DrI7RJjCOAVnTwK5y43t54jSrWyXGp/O3mrjayzq', 0, 0, 1706374258, 1706374258, '/icons/account.svg', 1, '/');
-INSERT INTO RV2_DB_NAME.users (user_id, organization_id, user_name, user_password, actions_code, rights_1, create_time, update_time, account_icon, user_type, start_page) VALUES (6, 2, 'r.tagirova', '$2a$14$qEdu6tI.1TAHdWttlnxhCeF9VQsyw1ACA5iPn5Z2NUq3hM32lYARS', 0, 0, 1706374271, 1706374271, '/icons/account.svg', 1, '/');
-INSERT INTO RV2_DB_NAME.users (user_id, organization_id, user_name, user_password, actions_code, rights_1, create_time, update_time, account_icon, user_type, start_page) VALUES (2, 2, 'remontti', '$2a$14$EA3./8raO12dFE6tj/6C4evQIig3AlVRDkFuVsQJiJsAjWX7PAw2.', 0, 8085, 1697057352, 1706374309, '/icons/upload-2287900351.png', 0, '/');
+INSERT INTO users (user_id, organization_id, user_name, user_password, actions_code, rights_1, create_time, update_time, account_icon, user_type, start_page) VALUES (1, 1, 'admin', '$2a$14$adZQlMqeE3qgAgGv.25PhuREomuM.zjCVIrLdoEUCpruv5g6DKEUi', 0, 2147483647, 0, 0, '', 0, '/');
+INSERT INTO users (user_id, organization_id, user_name, user_password, actions_code, rights_1, create_time, update_time, account_icon, user_type, start_page) VALUES (3, 2, 'employee', '$2a$14$NorbQj63.CseGzjcLs4p9.8zFIDusG/ZIAMMua9j3RV1aSvDjfj26', 0, 128, 1704540255, 1704540255, '/icons/img.png', 0, '#/branchselector');
+INSERT INTO users (user_id, organization_id, user_name, user_password, actions_code, rights_1, create_time, update_time, account_icon, user_type, start_page) VALUES (4, 2, 'l.markova', '$2a$14$Exm9En.WXP7.n1n2dLPP...OftXwsH8kDNzPVKV4Rte207a/u9rcG', 0, 0, 1706374247, 1706374247, '/icons/account.svg', 1, '/');
+INSERT INTO users (user_id, organization_id, user_name, user_password, actions_code, rights_1, create_time, update_time, account_icon, user_type, start_page) VALUES (5, 2, 't.bespalova', '$2a$14$l.Yh7el.4SkW5DrI7RJjCOAVnTwK5y43t54jSrWyXGp/O3mrjayzq', 0, 0, 1706374258, 1706374258, '/icons/account.svg', 1, '/');
+INSERT INTO users (user_id, organization_id, user_name, user_password, actions_code, rights_1, create_time, update_time, account_icon, user_type, start_page) VALUES (6, 2, 'r.tagirova', '$2a$14$qEdu6tI.1TAHdWttlnxhCeF9VQsyw1ACA5iPn5Z2NUq3hM32lYARS', 0, 0, 1706374271, 1706374271, '/icons/account.svg', 1, '/');
+INSERT INTO users (user_id, organization_id, user_name, user_password, actions_code, rights_1, create_time, update_time, account_icon, user_type, start_page) VALUES (2, 2, 'remontti', '$2a$14$EA3./8raO12dFE6tj/6C4evQIig3AlVRDkFuVsQJiJsAjWX7PAw2.', 0, 8085, 1697057352, 1706374309, '/icons/upload-2287900351.png', 0, '/');
 
 
 
@@ -124,7 +124,7 @@ INSERT INTO RV2_DB_NAME.users (user_id, organization_id, user_name, user_passwor
 
 
 
-INSERT INTO RV2_DB_NAME.organizations
+INSERT INTO organizations
 (organization_id, organization_name, host, create_time, update_time, creator)
 VALUES (1, 'control', 'control.RV2_DOMAIN_NAME', 0, 0, 1),
        (2, 'remontti', 'work.RV2_DOMAIN_NAME', 1697057352, 1697057352, 1),
@@ -134,7 +134,7 @@ VALUES (1, 'control', 'control.RV2_DOMAIN_NAME', 0, 0, 1),
 
 
 
-INSERT INTO RV2_DB_NAME.navigation
+INSERT INTO navigation
     (navigation_id, title, tooltip_text, navigation_group, icon, link)
 VALUES (1, 'organizations', 'organization_tooltip', 1, '/icons/organization.svg', '#/organizations'),
        (2, 'branch', 'branch_tooltip', 1, '/icons/branch-two.svg', '#/branches'),
@@ -149,7 +149,7 @@ VALUES (1, 'organizations', 'organization_tooltip', 1, '/icons/organization.svg'
 
 
 
-INSERT INTO RV2_DB_NAME.right_category_ids
+INSERT INTO right_category_ids
     (category_title, category_id)
 VALUES ('navigation', 1);
 
@@ -160,16 +160,16 @@ VALUES ('navigation', 1);
 
 
 
-INSERT INTO RV2_DB_NAME.rights (user_id, entity_id, entity_group) VALUES (1, 1, 1);
-INSERT INTO RV2_DB_NAME.rights (user_id, entity_id, entity_group) VALUES (1, 3, 1);
-INSERT INTO RV2_DB_NAME.rights (user_id, entity_id, entity_group) VALUES (1, 5, 1);
-INSERT INTO RV2_DB_NAME.rights (user_id, entity_id, entity_group) VALUES (1, 6, 1);
-INSERT INTO RV2_DB_NAME.rights (user_id, entity_id, entity_group) VALUES (1, 4, 1);
-INSERT INTO RV2_DB_NAME.rights (user_id, entity_id, entity_group) VALUES (1, 2, 1);
-INSERT INTO RV2_DB_NAME.rights (user_id, entity_id, entity_group) VALUES (2, 2, 1);
-INSERT INTO RV2_DB_NAME.rights (user_id, entity_id, entity_group) VALUES (2, 4, 1);
-INSERT INTO RV2_DB_NAME.rights (user_id, entity_id, entity_group) VALUES (2, 5, 1);
-INSERT INTO RV2_DB_NAME.rights (user_id, entity_id, entity_group) VALUES (2, 3, 1);
+INSERT INTO rights (user_id, entity_id, entity_group) VALUES (1, 1, 1);
+INSERT INTO rights (user_id, entity_id, entity_group) VALUES (1, 3, 1);
+INSERT INTO rights (user_id, entity_id, entity_group) VALUES (1, 5, 1);
+INSERT INTO rights (user_id, entity_id, entity_group) VALUES (1, 6, 1);
+INSERT INTO rights (user_id, entity_id, entity_group) VALUES (1, 4, 1);
+INSERT INTO rights (user_id, entity_id, entity_group) VALUES (1, 2, 1);
+INSERT INTO rights (user_id, entity_id, entity_group) VALUES (2, 2, 1);
+INSERT INTO rights (user_id, entity_id, entity_group) VALUES (2, 4, 1);
+INSERT INTO rights (user_id, entity_id, entity_group) VALUES (2, 5, 1);
+INSERT INTO rights (user_id, entity_id, entity_group) VALUES (2, 3, 1);
 
 
 
@@ -177,7 +177,7 @@ INSERT INTO RV2_DB_NAME.rights (user_id, entity_id, entity_group) VALUES (2, 3, 
 
 
 
-INSERT INTO RV2_DB_NAME.rights_names
+INSERT INTO rights_names
     (name, value)
 VALUES ('ADD_USER', pow(2, 0)),
        ('EDIT_USER', pow(2, 1)),
@@ -198,13 +198,13 @@ VALUES ('ADD_USER', pow(2, 0)),
 
 
 
-INSERT INTO RV2_DB_NAME.branches
+INSERT INTO branches
 (branch_id, organization_id, branch_name, address, phone, work_time, create_time, update_time)
 VALUES (1, 2, 'plaza', 'lesnoy 47b', '79994565544', '11-19', 0, 0);
-INSERT INTO RV2_DB_NAME.branches (branch_id, organization_id, branch_name, address, phone, work_time, create_time,
+INSERT INTO branches (branch_id, organization_id, branch_name, address, phone, work_time, create_time,
                                  update_time)
 VALUES (2, 2, 'master', 'Ленина 20', '71234567890', '11-19', 1704535350, 1704535350);
-INSERT INTO RV2_DB_NAME.branches (branch_id, organization_id, branch_name, address, phone, work_time, create_time,
+INSERT INTO branches (branch_id, organization_id, branch_name, address, phone, work_time, create_time,
                                  update_time)
 VALUES (3, 2, 'maxi', 'Ленина 14', '78846464466', '10-21', 1704669486, 1704669486);
 
@@ -213,39 +213,39 @@ VALUES (3, 2, 'maxi', 'Ленина 14', '78846464466', '10-21', 1704669486, 170
 
 
 
-INSERT INTO RV2_DB_NAME.user_branches (user_id, branch_id)
+INSERT INTO user_branches (user_id, branch_id)
 VALUES (3, 1);
-INSERT INTO RV2_DB_NAME.user_branches (user_id, branch_id)
+INSERT INTO user_branches (user_id, branch_id)
 VALUES (3, 2);
-INSERT INTO RV2_DB_NAME.user_branches (user_id, branch_id)
+INSERT INTO user_branches (user_id, branch_id)
 VALUES (3, 3);
-INSERT INTO RV2_DB_NAME.user_branches (user_id, branch_id)
+INSERT INTO user_branches (user_id, branch_id)
 VALUES (2, 1);
-INSERT INTO RV2_DB_NAME.user_branches (user_id, branch_id)
+INSERT INTO user_branches (user_id, branch_id)
 VALUES (2, 2);
-INSERT INTO RV2_DB_NAME.user_branches (user_id, branch_id)
+INSERT INTO user_branches (user_id, branch_id)
 VALUES (2, 3);
 
 
 
 
 
-INSERT INTO RV2_DB_NAME.users_create_relations (creator_id, created_id) VALUES (1, 2);
-INSERT INTO RV2_DB_NAME.users_create_relations (creator_id, created_id) VALUES (2, 3);
-INSERT INTO RV2_DB_NAME.users_create_relations (creator_id, created_id) VALUES (0, 1);
-INSERT INTO RV2_DB_NAME.users_create_relations (creator_id, created_id) VALUES (2, 4);
-INSERT INTO RV2_DB_NAME.users_create_relations (creator_id, created_id) VALUES (2, 5);
-INSERT INTO RV2_DB_NAME.users_create_relations (creator_id, created_id) VALUES (2, 6);
+INSERT INTO users_create_relations (creator_id, created_id) VALUES (1, 2);
+INSERT INTO users_create_relations (creator_id, created_id) VALUES (2, 3);
+INSERT INTO users_create_relations (creator_id, created_id) VALUES (0, 1);
+INSERT INTO users_create_relations (creator_id, created_id) VALUES (2, 4);
+INSERT INTO users_create_relations (creator_id, created_id) VALUES (2, 5);
+INSERT INTO users_create_relations (creator_id, created_id) VALUES (2, 6);
 
 
 
-INSERT INTO RV2_DB_NAME.hot_switch_relations (from_user, to_user) VALUES (3, 4);
-INSERT INTO RV2_DB_NAME.hot_switch_relations (from_user, to_user) VALUES (3, 5);
+INSERT INTO hot_switch_relations (from_user, to_user) VALUES (3, 4);
+INSERT INTO hot_switch_relations (from_user, to_user) VALUES (3, 5);
 
 
 
-SELECT setval('RV2_DB_NAME.users_user_id_seq', 100);
-SELECT setval('RV2_DB_NAME.organizations_organization_id_seq', 100);
-SELECT setval('RV2_DB_NAME.navigation_navigation_id_seq', 100);
-SELECT setval('RV2_DB_NAME.branches_branch_id_seq', 100);
+SELECT setval('users_user_id_seq', 100);
+SELECT setval('organizations_organization_id_seq', 100);
+SELECT setval('navigation_navigation_id_seq', 100);
+SELECT setval('branches_branch_id_seq', 100);
 

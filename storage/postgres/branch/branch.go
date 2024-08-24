@@ -29,8 +29,8 @@ func New(DB *pgxpool.Pool, CookieStore SessionStorage, Log *logrus.Logger) *Serv
 }
 
 func (o *Service) GetAll(userId int) ([]*e.Branch, error) {
-	query := `select * from remonttiv2.branches where branch_id in (
-    select branch_id from remonttiv2.user_branches where user_id=$1
+	query := `select * from branches where branch_id in (
+    select branch_id from user_branches where user_id=$1
     );`
 	rows, err := o.DB.Query(context.Background(), query, userId)
 	if err != nil {
@@ -56,7 +56,7 @@ func scanRows(rows pgx.Rows) ([]*e.Branch, error) {
 
 func (o *Service) Create(branch *e.Branch, userId int) (*e.Branch, error) {
 	query := `
-		INSERT INTO remonttiv2.branches
+		INSERT INTO branches
 			(branch_name, organization_id, address, phone, work_time, create_time, update_time) 
 		VALUES
 			($1, $2, $3, $4, $5, $6, $6);`
@@ -73,7 +73,7 @@ func (o *Service) Create(branch *e.Branch, userId int) (*e.Branch, error) {
 	}
 
 	query = `
-		INSERT INTO remonttiv2.user_branches (user_id, branch_id)
+		INSERT INTO user_branches (user_id, branch_id)
 	    VALUES ($1, $2);`
 
 	tag, err = o.DB.Exec(context.Background(), query, userId, newBranch.Id)
@@ -85,7 +85,7 @@ func (o *Service) Create(branch *e.Branch, userId int) (*e.Branch, error) {
 }
 
 func (o *Service) GetByNameAndOrgId(name string, orgId int) (*e.Branch, error) {
-	query := `select * from remonttiv2.branches where branch_name=$1 and organization_id=$2`
+	query := `select * from branches where branch_name=$1 and organization_id=$2`
 	row := o.DB.QueryRow(context.Background(), query, name, orgId)
 
 	branch := &e.Branch{}
@@ -110,7 +110,7 @@ func (o *Service) GetByNameAndOrgId(name string, orgId int) (*e.Branch, error) {
 
 func (o *Service) Delete(branchId int, orgId int) error {
 	query := `
-		DELETE FROM remonttiv2.branches 
+		DELETE FROM branches 
 		WHERE branch_id=$1 and organization_id=$2`
 
 	tag, err := o.DB.Exec(context.Background(), query, branchId, orgId)

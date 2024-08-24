@@ -29,18 +29,18 @@ func (o *Service) Get(userId int) (*[]e.Navigation, error) {
 
 	query := `
 			SELECT 
-			    remonttiv2.navigation.navigation_id,
-			    remonttiv2.navigation.title,
-			    remonttiv2.navigation.tooltip_text,
-			    remonttiv2.navigation.navigation_group,
-			    remonttiv2.navigation.icon,
-			    remonttiv2.navigation.link
+			    navigation.navigation_id,
+			    navigation.title,
+			    navigation.tooltip_text,
+			    navigation.navigation_group,
+			    navigation.icon,
+			    navigation.link
 			FROM 
-			    remonttiv2.navigation, remonttiv2.rights 
+			    navigation, rights 
 			WHERE 
-			    remonttiv2.rights.entity_group = $1 AND
-			    remonttiv2.rights.user_id = $2 AND
-			    remonttiv2.rights.entity_id = remonttiv2.navigation.navigation_id;`
+			    rights.entity_group = $1 AND
+			    rights.user_id = $2 AND
+			    rights.entity_id = navigation.navigation_id;`
 
 	rows, err := o.DB.Query(context.Background(), query, 1, userId)
 	if err != nil {
@@ -67,7 +67,7 @@ func scanRows(rows pgx.Rows) (*[]e.Navigation, error) {
 
 // Set TODO: паренести в работу с entities
 func (o *Service) Set(userId int, navigationId int, groupId int) (*e.NavigationAvailable, error) {
-	query := "insert into remonttiv2.rights (user_id, entity_id, entity_group) values ($1, $2, $3)"
+	query := "insert into rights (user_id, entity_id, entity_group) values ($1, $2, $3)"
 	_, err := o.DB.Exec(context.Background(), query, userId, navigationId, groupId)
 	if err != nil {
 		return nil, err
@@ -77,7 +77,7 @@ func (o *Service) Set(userId int, navigationId int, groupId int) (*e.NavigationA
 
 // Delete TODO: паренести в работу с entities
 func (o *Service) Delete(userId int, navigationId int, groupId int) error {
-	query := "delete from remonttiv2.rights where user_id = $1 and entity_id=$2 and entity_group=$3"
+	query := "delete from rights where user_id = $1 and entity_id=$2 and entity_group=$3"
 	_, err := o.DB.Exec(context.Background(), query, userId, navigationId, groupId)
 	if err != nil {
 		return err

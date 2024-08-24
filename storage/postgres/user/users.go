@@ -39,7 +39,7 @@ func (u *Service) GetUserByLoginAndOrganization(login string, organizationId int
 
 	var user = &e.User{}
 
-	query := `select * from remonttiv2.users where user_name = $1 and organization_id=$2;`
+	query := `select * from users where user_name = $1 and organization_id=$2;`
 
 	row := u.DB.QueryRow(context.Background(), query, login, organizationId)
 
@@ -59,8 +59,8 @@ func (u *Service) GetByOrganizationId(userId int) ([]*e.UserShort, error) {
 			select distinct 
     			user_id, user_name, create_time, update_time, user_type 
 			from 
-			    remonttiv2.users as users,
-				remonttiv2.users_create_relations as relations
+			    users as users,
+				users_create_relations as relations
 			where 
 			    (
 			        (users.user_id = relations.created_id AND relations.creator_id = $1) OR 
@@ -136,7 +136,7 @@ func scanRows(rows pgx.Rows) ([]*e.UserShort, error) {
 
 func (u *Service) Delete(userId int) error {
 	query := `
-		DELETE FROM remonttiv2.users 
+		DELETE FROM users 
 		WHERE user_id=$1`
 
 	tag, err := u.DB.Exec(context.Background(), query, userId)
@@ -151,7 +151,7 @@ func (u *Service) Delete(userId int) error {
 func (u *Service) GetById(userId int) (*e.User, error) {
 	var user = &e.User{}
 
-	query := `select * from  remonttiv2.users where user_id = $1;`
+	query := `select * from  users where user_id = $1;`
 
 	row := u.DB.QueryRow(context.Background(), query, userId)
 
@@ -168,7 +168,7 @@ func (u *Service) GetById(userId int) (*e.User, error) {
 func (u *Service) Create(user *e.User) (int, error) {
 	// Обновляя поля в этом запросе, обновить и update
 	query := `
-		INSERT INTO remonttiv2.users
+		INSERT INTO users
 			(user_name, user_password, create_time, update_time, organization_id, rights_1, actions_code, user_type, start_page) 
 		VALUES
 			($1, $2, $3, $4, $5, $6, $7, $8, $9)
@@ -235,7 +235,7 @@ func scanUser(row pgx.Row) (*e.User, error) {
 func (u *Service) SetIcon(userId int, iconLink string) error {
 
 	query := `
-		UPDATE remonttiv2.users SET account_icon = $1 WHERE user_id = $2`
+		UPDATE users SET account_icon = $1 WHERE user_id = $2`
 
 	_, err := u.DB.Exec(context.Background(), query, iconLink, userId)
 	if err != nil {
@@ -247,7 +247,7 @@ func (u *Service) SetIcon(userId int, iconLink string) error {
 
 func (u *Service) SetUserCreateRelations(creatorId int, createdId int) error {
 	query := `
-		INSERT INTO remonttiv2.users_create_relations (creator_id, created_id) VALUES($1, $2)`
+		INSERT INTO users_create_relations (creator_id, created_id) VALUES($1, $2)`
 	_, err := u.DB.Exec(context.Background(), query, creatorId, createdId)
 	if err != nil {
 		logrus.Warning(err.Error())
@@ -262,8 +262,8 @@ func (u *Service) GetChild(userId int) ([]*e.UserShort, error) {
 			select distinct 
     			user_id, user_name, create_time, update_time, user_type 
 			from 
-			    remonttiv2.users as users,
-				remonttiv2.users_create_relations as relations
+			    users as users,
+				users_create_relations as relations
 			where 
 			    (
 			        (users.user_id = relations.created_id AND relations.creator_id = $1)
@@ -318,7 +318,7 @@ func (u *Service) GetInfo(userId int, infoLevel int) (*e.UserInfoFull, error) {
 func (u *Service) UpdateUser(user *e.User) (*e.User, error) {
 	// Обновляя поля в этом запросе, обновить и create
 	query := `
-		update remonttiv2.users set 
+		update users set 
 		    user_name = $1, 
 		    user_password = $2, 
 		    update_time = $3, 
@@ -353,7 +353,7 @@ func (u *Service) UpdateUser(user *e.User) (*e.User, error) {
 }
 
 func (u *Service) GetParentId(userId int) (int, error) {
-	query := `select creator_id from remonttiv2.users_create_relations where created_id=$1`
+	query := `select creator_id from users_create_relations where created_id=$1`
 	result := u.DB.QueryRow(context.Background(), query, userId)
 
 	var id *int
@@ -370,7 +370,7 @@ func (u *Service) GetParentUser(userId int) (*e.User, error) {
 	query := `
 			select distinct * 
 			from 
-				remonttiv2.users as users, remonttiv2.users_create_relations as relations
+				users as users, users_create_relations as relations
 			where 
 				users.user_id=relations.creator_id AND
 				relations.created_id = $1
@@ -388,7 +388,7 @@ func (u *Service) GetParentUser(userId int) (*e.User, error) {
 }
 
 func (u *Service) SetHotSwitchRelation(fromId, toId int) error {
-	query := `insert into remonttiv2.hot_switch_relations (from_user, to_user) values ($1, $2)`
+	query := `insert into hot_switch_relations (from_user, to_user) values ($1, $2)`
 	_, err := u.DB.Exec(context.Background(), query, fromId, toId)
 	if err != nil {
 		return err
@@ -397,7 +397,7 @@ func (u *Service) SetHotSwitchRelation(fromId, toId int) error {
 }
 
 func (u *Service) RemoveHotSwitchRelation(fromId, toId int) error {
-	query := `delete from remonttiv2.hot_switch_relations where from_user=$1 and  to_user=$2`
+	query := `delete from hot_switch_relations where from_user=$1 and  to_user=$2`
 	_, err := u.DB.Exec(context.Background(), query, fromId, toId)
 	if err != nil {
 		return err
@@ -408,7 +408,7 @@ func (u *Service) RemoveHotSwitchRelation(fromId, toId int) error {
 // TODO: две функции ниже делают одно и тоже, надо объединить
 
 func (u *Service) GetHotSwitch(userId int) ([]*e.UserShort, error) {
-	query := `select users.user_id, users.user_name, users.create_time, users.update_time, users.user_type from remonttiv2.users as users, remonttiv2.hot_switch_relations as switch where users.user_id = switch.to_user and switch.from_user=$1`
+	query := `select users.user_id, users.user_name, users.create_time, users.update_time, users.user_type from users as users, hot_switch_relations as switch where users.user_id = switch.to_user and switch.from_user=$1`
 	rows, err := u.DB.Query(context.Background(), query, userId)
 	if err != nil {
 		return nil, err
@@ -420,7 +420,7 @@ func (u *Service) GetHotSwitch(userId int) ([]*e.UserShort, error) {
 }
 
 func (u *Service) GetUsersToSwitch(userId int) ([]*e.UserSwitcher, error) {
-	query := `select users.user_id, users.user_name, users.account_icon from remonttiv2.users as users, remonttiv2.hot_switch_relations as switch where users.user_id=switch.to_user and switch.from_user=$1`
+	query := `select users.user_id, users.user_name, users.account_icon from users as users, hot_switch_relations as switch where users.user_id=switch.to_user and switch.from_user=$1`
 	rows, err := u.DB.Query(context.Background(), query, userId)
 	if err != nil {
 		return nil, err
