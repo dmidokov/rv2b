@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS users
 )
     TABLESPACE pg_default;
 
-CREATE TABLE IF NOT EXISTS Organizations
+CREATE TABLE IF NOT EXISTS organizations
 (
     organization_id   SERIAL                 NOT NULL,
     organization_name character varying(50)  NOT NULL,
