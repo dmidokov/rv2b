@@ -117,7 +117,7 @@ func (hm *Service) Router() (*mux.Router, error) {
 	userRouter.HandleFunc("/switcher", userHandler.AddToSwitcher(userService, rightsService)).Methods(http.MethodPut)
 	userRouter.HandleFunc("/switcher", userHandler.RemoveFromSwitcher(userService, rightsService)).Methods(http.MethodDelete)
 	userRouter.HandleFunc("/switcher", userHandler.GetSwitcher(userService, rightsService)).Methods(http.MethodGet)
-	userRouter.HandleFunc("/switcher/switch", userHandler.GetSwitcher(userService, rightsService)).Methods(http.MethodGet)
+	userRouter.HandleFunc("/switcher/switch", userHandler.SwitchUser(userService, rightsService)).Methods(http.MethodGet)
 
 	router.HandleFunc("/sse/{folder}", hm.sseHandler())
 	router.HandleFunc("/send/{event}/{client}", hm.sendMessage())

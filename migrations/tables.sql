@@ -112,11 +112,11 @@ CREATE TABLE IF NOT EXISTS hot_switch_relations
 
 
 INSERT INTO users (user_id, organization_id, user_name, user_password, actions_code, rights_1, create_time, update_time, account_icon, user_type, start_page) VALUES (1, 1, 'admin', '$2a$14$adZQlMqeE3qgAgGv.25PhuREomuM.zjCVIrLdoEUCpruv5g6DKEUi', 0, 2147483647, 0, 0, '', 0, '/');
-INSERT INTO users (user_id, organization_id, user_name, user_password, actions_code, rights_1, create_time, update_time, account_icon, user_type, start_page) VALUES (3, 2, 'employee', '$2a$14$NorbQj63.CseGzjcLs4p9.8zFIDusG/ZIAMMua9j3RV1aSvDjfj26', 0, 128, 1704540255, 1704540255, '/icons/img.png', 0, '#/branchselector');
+INSERT INTO users (user_id, organization_id, user_name, user_password, actions_code, rights_1, create_time, update_time, account_icon, user_type, start_page) VALUES (3, 2, 'employee', '$2a$14$adZQlMqeE3qgAgGv.25PhuREomuM.zjCVIrLdoEUCpruv5g6DKEUi', 0, 128, 1704540255, 1704540255, '/icons/img.png', 0, '#/branchselector');
 INSERT INTO users (user_id, organization_id, user_name, user_password, actions_code, rights_1, create_time, update_time, account_icon, user_type, start_page) VALUES (4, 2, 'l.markova', '$2a$14$Exm9En.WXP7.n1n2dLPP...OftXwsH8kDNzPVKV4Rte207a/u9rcG', 0, 0, 1706374247, 1706374247, '/icons/account.svg', 1, '/');
 INSERT INTO users (user_id, organization_id, user_name, user_password, actions_code, rights_1, create_time, update_time, account_icon, user_type, start_page) VALUES (5, 2, 't.bespalova', '$2a$14$l.Yh7el.4SkW5DrI7RJjCOAVnTwK5y43t54jSrWyXGp/O3mrjayzq', 0, 0, 1706374258, 1706374258, '/icons/account.svg', 1, '/');
 INSERT INTO users (user_id, organization_id, user_name, user_password, actions_code, rights_1, create_time, update_time, account_icon, user_type, start_page) VALUES (6, 2, 'r.tagirova', '$2a$14$qEdu6tI.1TAHdWttlnxhCeF9VQsyw1ACA5iPn5Z2NUq3hM32lYARS', 0, 0, 1706374271, 1706374271, '/icons/account.svg', 1, '/');
-INSERT INTO users (user_id, organization_id, user_name, user_password, actions_code, rights_1, create_time, update_time, account_icon, user_type, start_page) VALUES (2, 2, 'remontti', '$2a$14$EA3./8raO12dFE6tj/6C4evQIig3AlVRDkFuVsQJiJsAjWX7PAw2.', 0, 8085, 1697057352, 1706374309, '/icons/upload-2287900351.png', 0, '/');
+INSERT INTO users (user_id, organization_id, user_name, user_password, actions_code, rights_1, create_time, update_time, account_icon, user_type, start_page) VALUES (2, 2, 'remontti', '$2a$14$adZQlMqeE3qgAgGv.25PhuREomuM.zjCVIrLdoEUCpruv5g6DKEUi', 0, 8085, 1697057352, 1706374309, '/icons/upload-2287900351.png', 0, '/');
 
 
 

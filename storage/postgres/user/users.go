@@ -439,3 +439,15 @@ func (u *Service) GetUsersToSwitch(userId int) ([]*e.UserSwitcher, error) {
 	}
 	return result, nil
 }
+
+func (u *Service) CanUserSwitchToId(from, to int) bool {
+	r := e.HotSwitchRelations{}
+	query := `select from hot_switch_relations where from_user=$1 and to_user=$2`
+	row := u.DB.QueryRow(context.Background(), query, from, to)
+
+	err := row.Scan(r.FromUser, r.ToUser)
+	if err != nil {
+		return false
+	}
+	return true
+}

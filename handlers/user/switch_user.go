@@ -1,12 +1,21 @@
 package user
 
 import (
+	"github.com/dmidokov/rv2/lib/entitie"
 	resp "github.com/dmidokov/rv2/response"
 	"net/http"
+	"strconv"
 )
 
+type userSwitcher interface {
+	GetUserIdFromSession(r *http.Request) int
+	GetById(userId int) (*entitie.User, error)
+	GetUsersToSwitch(userId int) ([]*entitie.UserSwitcher, error)
+	CanUserSwitchToId(from int, to int) bool
+}
+
 func (s *Service) SwitchUser(
-	userProvider userSwitchGetter,
+	userProvider userSwitcher,
 	rightsProvider rightsSetter,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -21,8 +30,8 @@ func (s *Service) SwitchUser(
 		response := resp.Service{Writer: &w, Logger: s.Logger, Operation: method}
 
 		query := r.URL.Query()
-		field := query.Get("id")
-		if field == "" {
+		field, err := strconv.Atoi(query.Get("id"))
+		if err != nil {
 			response.WrongParameter()
 			return
 		}
@@ -34,6 +43,7 @@ func (s *Service) SwitchUser(
 			return
 		}
 
+		userCanSwith := userProvider.CanUserSwitchToId(currentUserId, field)
 		// todo: проверяем что этот пользователь может переключиться на указанного
 
 		// todo: меняем айдишник юзера в сессии на указаный

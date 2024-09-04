@@ -79,8 +79,6 @@ func (s *Service) SignIn(userProvider UserProvider, organizationProvider Organiz
 			return
 		}
 
-		logrus.Info(r.Host)
-
 		foundOrganization, err := organizationProvider.GetByHostName(r.Host)
 
 		if err != nil {
