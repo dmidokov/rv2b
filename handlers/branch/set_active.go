@@ -2,13 +2,14 @@ package branch
 
 import (
 	resp "github.com/dmidokov/rv2/response"
+	"github.com/dmidokov/rv2/session/cookie"
 	"github.com/gorilla/mux"
 	"net/http"
 )
 
 type SessionStorage interface {
 	Save(r *http.Request, w http.ResponseWriter, data map[string]interface{}) bool
-	Get(r *http.Request, key string) (interface{}, bool)
+	GetByKey(r *http.Request, key string) (interface{}, bool)
 	SetMaxAge(maxAge int)
 }
 
@@ -36,7 +37,7 @@ func (s *Service) SetActiveBranch(userProvider userProvider, cookieStorage Sessi
 		}
 
 		var savingParams = make(map[string]interface{}, 1)
-		savingParams["selected_branch"] = branchId
+		savingParams[cookie.SelectedBranch] = branchId
 		if !cookieStorage.Save(r, w, savingParams) {
 			response.InternalServerError()
 		}

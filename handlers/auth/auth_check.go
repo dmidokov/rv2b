@@ -2,6 +2,7 @@ package auth
 
 import (
 	"github.com/dmidokov/rv2/response"
+	"github.com/dmidokov/rv2/session/cookie"
 	"github.com/sirupsen/logrus"
 	"net/http"
 )
@@ -20,7 +21,7 @@ func (s *Service) AuthCheck(w http.ResponseWriter, r *http.Request) {
 
 	response := resp.New(&w, s.Logger, fn)
 
-	if auth, ok := s.CookieStore.Get(r, "authenticated"); ok && auth.(bool) {
+	if auth, ok := s.CookieStore.GetByKey(r, cookie.Authenticated); ok && auth.(bool) {
 		response.OK()
 
 		return

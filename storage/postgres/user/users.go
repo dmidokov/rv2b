@@ -2,7 +2,9 @@ package user
 
 import (
 	"context"
+	"fmt"
 	e "github.com/dmidokov/rv2/lib/entitie"
+	"github.com/dmidokov/rv2/session/cookie"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/sirupsen/logrus"
@@ -24,7 +26,7 @@ const (
 
 type SessionStorage interface {
 	Save(r *http.Request, w http.ResponseWriter, data map[string]interface{}) bool
-	Get(r *http.Request, key string) (interface{}, bool)
+	GetByKey(r *http.Request, key string) (interface{}, bool)
 }
 
 func New(DB *pgxpool.Pool, CookieStore SessionStorage, Log *logrus.Logger) *Service {
@@ -84,12 +86,12 @@ func (u *Service) GetByOrganizationId(userId int) ([]*e.UserShort, error) {
 func (u *Service) GetUserIdFromSession(r *http.Request) int {
 	log := u.Log
 
-	if auth, ok := u.CookieStore.Get(r, "authenticated"); !ok || !auth.(bool) {
+	if auth, ok := u.CookieStore.GetByKey(r, cookie.Authenticated); !ok || !auth.(bool) {
 		log.Warning("User is not authorized")
 		return 0
 	}
 
-	if userId, ok := u.CookieStore.Get(r, "userid"); !ok {
+	if userId, ok := u.CookieStore.GetByKey(r, cookie.UserId); !ok {
 		log.Warning("User is not authorized")
 		return 0
 	} else {
@@ -108,12 +110,12 @@ func (u *Service) IsAuthorized(r *http.Request) bool {
 func (u *Service) GetOrganizationIdFromSession(r *http.Request) int {
 	log := u.Log
 
-	if auth, ok := u.CookieStore.Get(r, "authenticated"); !ok || !auth.(bool) {
+	if auth, ok := u.CookieStore.GetByKey(r, cookie.Authenticated); !ok || !auth.(bool) {
 		log.Warning("User is not authorized")
 		return 0
 	}
 
-	if orgId, ok := u.CookieStore.Get(r, "organizationid"); !ok {
+	if orgId, ok := u.CookieStore.GetByKey(r, cookie.OrganizationId); !ok {
 		log.Warning("User is not authorized")
 		return 0
 	} else {
@@ -442,11 +444,16 @@ func (u *Service) GetUsersToSwitch(userId int) ([]*e.UserSwitcher, error) {
 
 func (u *Service) CanUserSwitchToId(from, to int) bool {
 	r := e.HotSwitchRelations{}
-	query := `select from hot_switch_relations where from_user=$1 and to_user=$2`
+	query := `select * from hot_switch_relations where from_user=$1 and to_user=$2`
 	row := u.DB.QueryRow(context.Background(), query, from, to)
 
-	err := row.Scan(r.FromUser, r.ToUser)
+	fmt.Println(query)
+	fmt.Println(from)
+	fmt.Println(to)
+
+	err := row.Scan(&r.FromUser, &r.ToUser)
 	if err != nil {
+		fmt.Println(err.Error())
 		return false
 	}
 	return true

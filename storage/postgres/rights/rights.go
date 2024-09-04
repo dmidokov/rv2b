@@ -22,6 +22,8 @@ func New(DB *pgxpool.Pool, Log *logrus.Logger) *Service {
 }
 
 func (rg *Service) CheckUserRight(user *e.User, right int) bool {
+	fmt.Println(user.Rights)
+	fmt.Println(right)
 	if (user.Rights & right) == right {
 		return true
 	}

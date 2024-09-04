@@ -2,8 +2,10 @@ package auth
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/dmidokov/rv2/lib/entitie"
 	resp "github.com/dmidokov/rv2/response"
+	"github.com/dmidokov/rv2/session/cookie"
 	"github.com/jackc/pgx/v4"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
@@ -133,9 +135,11 @@ func (s *Service) SignIn(userProvider UserProvider, organizationProvider Organiz
 
 		var savingParams = make(map[string]interface{}, 3)
 
-		savingParams["authenticated"] = true
-		savingParams["userid"] = user.Id
-		savingParams["organizationid"] = foundOrganization.Id
+		fmt.Println(user.Id)
+
+		savingParams[cookie.Authenticated] = true
+		savingParams[cookie.UserId] = user.Id
+		savingParams[cookie.OrganizationId] = foundOrganization.Id
 		s.CookieStore.SetMaxAge(s.Config.SessionMaxAge)
 
 		s.CookieStore.Save(r, w, savingParams)

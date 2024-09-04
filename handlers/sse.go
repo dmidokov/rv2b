@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"github.com/dmidokov/rv2/response"
+	"github.com/dmidokov/rv2/session/cookie"
 	"github.com/dmidokov/rv2/sse"
 	"net/http"
 	"path"
@@ -17,13 +18,13 @@ func (hm *Service) sseHandler() http.HandlerFunc {
 		log := hm.Logger
 		responses := resp.Service{Writer: &w, Logger: log, Operation: "sse.sseHandler"}
 
-		if auth, ok := hm.CookieStore.Get(r, "authenticated"); !ok || !auth.(bool) {
+		if auth, ok := hm.CookieStore.GetByKey(r, cookie.Authenticated); !ok || !auth.(bool) {
 			log.Warning("User is not authorized")
 			responses.Unauthorized()
 			return
 		}
 
-		if _, ok := hm.CookieStore.Get(r, "userid"); !ok {
+		if _, ok := hm.CookieStore.GetByKey(r, cookie.UserId); !ok {
 			log.Warning("User is not authorized")
 			responses.Unauthorized()
 			return
@@ -31,7 +32,8 @@ func (hm *Service) sseHandler() http.HandlerFunc {
 
 		eventName := sse.EventName(path.Base(r.URL.Path))
 
-		v, _ := hm.CookieStore.Get(r, "userid")
+		// TODO:: рил два раза одно и тоже
+		v, _ := hm.CookieStore.GetByKey(r, cookie.UserId)
 		userId := v.(int)
 
 		flusher, _ := w.(http.Flusher)

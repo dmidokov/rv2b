@@ -16,7 +16,7 @@ type Service struct {
 }
 
 type SessionStorage interface {
-	Get(r *http.Request, key string) (interface{}, bool)
+	GetByKey(r *http.Request, key string) (interface{}, bool)
 }
 
 func New(DB *pgxpool.Pool, CookieStore SessionStorage, Log *logrus.Logger) *Service {

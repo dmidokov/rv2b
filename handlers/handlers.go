@@ -9,6 +9,7 @@ import (
 	orgH "github.com/dmidokov/rv2/handlers/organization"
 	userH "github.com/dmidokov/rv2/handlers/user"
 	"github.com/dmidokov/rv2/response"
+	"github.com/dmidokov/rv2/session/cookie"
 	"github.com/dmidokov/rv2/sse"
 	branchS "github.com/dmidokov/rv2/storage/postgres/branch"
 	navigationS "github.com/dmidokov/rv2/storage/postgres/navigation"
@@ -36,8 +37,9 @@ type Service struct {
 
 type SessionStorage interface {
 	Save(r *http.Request, w http.ResponseWriter, data map[string]interface{}) bool
-	Get(r *http.Request, key string) (interface{}, bool)
+	GetByKey(r *http.Request, key string) (interface{}, bool)
 	SetMaxAge(maxAge int)
+	Get(r *http.Request) (map[interface{}]interface{}, error)
 }
 
 func New(db *pgxpool.Pool, cfg *config.Configuration, sessionStore SessionStorage, log *logrus.Logger, sse *sse.EventService) *Service {
@@ -117,7 +119,7 @@ func (hm *Service) Router() (*mux.Router, error) {
 	userRouter.HandleFunc("/switcher", userHandler.AddToSwitcher(userService, rightsService)).Methods(http.MethodPut)
 	userRouter.HandleFunc("/switcher", userHandler.RemoveFromSwitcher(userService, rightsService)).Methods(http.MethodDelete)
 	userRouter.HandleFunc("/switcher", userHandler.GetSwitcher(userService, rightsService)).Methods(http.MethodGet)
-	userRouter.HandleFunc("/switcher/switch", userHandler.SwitchUser(userService, rightsService)).Methods(http.MethodGet)
+	userRouter.HandleFunc("/switcher/switch", userHandler.SwitchUser(userService, rightsService, hm.CookieStore)).Methods(http.MethodGet)
 
 	router.HandleFunc("/sse/{folder}", hm.sseHandler())
 	router.HandleFunc("/send/{event}/{client}", hm.sendMessage())
@@ -145,7 +147,7 @@ func (hm *Service) loggingMiddleware(next http.HandlerFunc) http.HandlerFunc {
 
 		responses := resp.Service{Writer: &w, Logger: log, Operation: method}
 
-		if authenticated, ok := hm.CookieStore.Get(r, "authenticated"); ok && authenticated.(bool) {
+		if authenticated, ok := hm.CookieStore.GetByKey(r, cookie.Authenticated); ok && authenticated.(bool) {
 			hm.CookieStore.Save(r, w, make(map[string]interface{}))
 			if r.URL.String() == "/" {
 				w.Header().Set("cache-control", "no-cache")
@@ -170,7 +172,7 @@ func (hm *Service) loggingMiddleware1(next http.Handler) http.Handler {
 		log.Info(r.RequestURI)
 		responses := resp.Service{Writer: &w, Logger: log, Operation: method}
 
-		if authenticated, ok := hm.CookieStore.Get(r, "authenticated"); ok && authenticated.(bool) {
+		if authenticated, ok := hm.CookieStore.GetByKey(r, cookie.Authenticated); ok && authenticated.(bool) {
 			hm.CookieStore.Save(r, w, make(map[string]interface{}))
 			if r.URL.String() == "/" {
 				w.Header().Set("cache-control", "no-cache")

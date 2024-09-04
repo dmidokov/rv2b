@@ -2,6 +2,7 @@ package auth
 
 import (
 	resp "github.com/dmidokov/rv2/response"
+	"github.com/dmidokov/rv2/session/cookie"
 	"github.com/sirupsen/logrus"
 	"net/http"
 )
@@ -11,9 +12,9 @@ func (s *Service) Logout(w http.ResponseWriter, r *http.Request) {
 
 	var savingParams = make(map[string]interface{}, 3)
 
-	savingParams["authenticated"] = false
-	savingParams["userid"] = nil
-	savingParams["organizationid"] = nil
+	savingParams[cookie.Authenticated] = false
+	savingParams[cookie.UserId] = nil
+	savingParams[cookie.OrganizationId] = nil
 	err := s.CookieStore.Save(r, w, savingParams)
 
 	contextLogger := s.Logger.WithFields(logrus.Fields{

@@ -1,8 +1,11 @@
 package user
 
 import (
+	"github.com/dmidokov/rv2/lib"
 	"github.com/dmidokov/rv2/lib/entitie"
 	resp "github.com/dmidokov/rv2/response"
+	"github.com/dmidokov/rv2/session/cookie"
+	"github.com/sirupsen/logrus"
 	"net/http"
 	"strconv"
 )
@@ -12,11 +15,18 @@ type userSwitcher interface {
 	GetById(userId int) (*entitie.User, error)
 	GetUsersToSwitch(userId int) ([]*entitie.UserSwitcher, error)
 	CanUserSwitchToId(from int, to int) bool
+	GetParentId(userId int) (int, error)
+}
+
+type SessionStorage interface {
+	Save(r *http.Request, w http.ResponseWriter, data map[string]interface{}) bool
+	Get(r *http.Request) (map[interface{}]interface{}, error)
 }
 
 func (s *Service) SwitchUser(
 	userProvider userSwitcher,
 	rightsProvider rightsSetter,
+	sessionProvider SessionStorage,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
@@ -38,27 +48,48 @@ func (s *Service) SwitchUser(
 
 		currentUserId := userProvider.GetUserIdFromSession(r)
 		if currentUserId == 0 {
-			log.Error("Unauthorized")
+			log.Warning("Unauthorized")
 			response.Unauthorized()
 			return
 		}
 
-		userCanSwith := userProvider.CanUserSwitchToId(currentUserId, field)
-		// todo: проверяем что этот пользователь может переключиться на указанного
+		if !isSwitchAllow(userProvider, currentUserId, field, log, rightsProvider) {
+			response.NotAllowed()
+			return
+		}
 
-		// todo: меняем айдишник юзера в сессии на указаный
+		var savingParams = make(map[string]interface{}, 1)
+		savingParams[cookie.SwitchedTo] = field
 
-		// todo: сохраняем в сессии старый айди чтоб потом вернуться
+		sessionProvider.Save(r, w, savingParams)
 
-		//// TODO: тут еще надо проверить, что пользователи потомки одного родителя ???
-		//userSwitcher, err := userProvider.GetUsersToSwitch(currentUserId)
-		//if err != nil {
-		//	log.Errorf("Error: %s", err.Error())
-		//	response.InternalServerError()
-		//	return
-		//}
-
-		//response.OKWithData(userSwitcher)
+		response.OK()
 
 	}
+}
+
+func isSwitchAllow(userProvider userSwitcher, currentUserId int, field int, log *logrus.Logger, rightsProvider rightsSetter) bool {
+	canSwitch := userProvider.CanUserSwitchToId(currentUserId, field)
+
+	if !canSwitch {
+		log.Warning("Hasn't rights to switch, no relations")
+		return false
+	}
+
+	currentUser, _ := userProvider.GetById(currentUserId)
+
+	if !rightsProvider.CheckUserRight(currentUser, lib.HotSwitchToAnotherUser) {
+		log.Warning("Hasn't rights to switch, no right")
+		return false
+	}
+
+	currentUserParent, _ := userProvider.GetParentId(currentUserId)
+	switchUserParent, _ := userProvider.GetParentId(field)
+
+	if currentUserParent != switchUserParent {
+		log.Warning("Users has different parent")
+		return false
+	}
+
+	return true
 }

@@ -5,6 +5,14 @@ import (
 	"net/http"
 )
 
+const (
+	Authenticated  = "authenticated"
+	UserId         = "userId"
+	OrganizationId = "organizationId"
+	SwitchedTo     = "switchedTo"
+	SelectedBranch = "selectedBranch"
+)
+
 type Service struct {
 	CookieStore *sessions.CookieStore
 	Secret      string
@@ -36,7 +44,7 @@ func (s *Service) Save(r *http.Request, w http.ResponseWriter, data map[string]i
 	return true
 }
 
-func (s *Service) Get(r *http.Request, key string) (interface{}, bool) {
+func (s *Service) GetByKey(r *http.Request, key string) (interface{}, bool) {
 	session, err := s.CookieStore.Get(r, s.Secret)
 
 	if err != nil {
@@ -48,4 +56,13 @@ func (s *Service) Get(r *http.Request, key string) (interface{}, bool) {
 	}
 
 	return nil, false
+}
+
+func (s *Service) Get(r *http.Request) (map[interface{}]interface{}, error) {
+	session, err := s.CookieStore.Get(r, s.Secret)
+	if err != nil {
+		return nil, err
+	}
+
+	return session.Values, nil
 }

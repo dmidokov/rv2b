@@ -113,7 +113,7 @@ func TestService_Get(t *testing.T) {
 				Config: tt.fields.Config,
 			}
 			if got := s.Get(tt.args.branchGetter, tt.args.userProvider); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Get() = %v, want %v", got, tt.want)
+				t.Errorf("GetByKey() = %v, want %v", got, tt.want)
 			}
 		})
 	}

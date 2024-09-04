@@ -14,5 +14,5 @@ const (
 	EditUserRights
 	EditUserNavigation
 	EditUserHotSwitch
-	_
+	HotSwitchToAnotherUser
 )

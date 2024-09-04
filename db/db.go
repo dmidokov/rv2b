@@ -27,7 +27,28 @@ func ConnectToDB(dbHost, dbPort, dbUser, dbPassword, dbName string) (*pgxpool.Po
 
 func DropSchema(pool *pgxpool.Pool, dbName string) error {
 
-	var DropSchemaSQL = `DROP SCHEMA ` + dbName + ` CASCADE; CREATE SCHEMA ` + dbName + `;`
+	var DropSchemaSQL = `DROP TABLE IF EXISTS users;
+						
+						DROP TABLE IF EXISTS organizations;
+						
+						DROP TABLE IF EXISTS navigation;
+						
+						DROP TABLE IF EXISTS right_category_ids;
+						
+						DROP TABLE IF EXISTS rights;
+						
+						DROP TABLE IF EXISTS rights_names;
+						
+						DROP TABLE IF EXISTS branches;
+						
+						DROP TABLE IF EXISTS user_branches;
+						
+						DROP TABLE IF EXISTS users_create_relations;
+						
+						DROP TABLE IF EXISTS entity_group_to_entity_name;
+						
+						DROP TABLE IF EXISTS hot_switch_relations;
+`
 
 	_, err := pool.Exec(context.Background(), DropSchemaSQL)
 	if err != nil {

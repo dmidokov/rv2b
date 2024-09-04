@@ -146,15 +146,9 @@ VALUES (1, 'organizations', 'organization_tooltip', 1, '/icons/organization.svg'
 
 
 
-
-
-
 INSERT INTO right_category_ids
     (category_title, category_id)
 VALUES ('navigation', 1);
-
-
-
 
 
 
@@ -191,7 +185,8 @@ VALUES ('ADD_USER', pow(2, 0)),
        ('DELETE_BRANCH_LIST', pow(2, 9)),
        ('EDIT_USER_RIGHTS', pow(2, 10)),
        ('EDIT_USER_NAVIGATION', pow(2, 11)),
-       ('EDIT_USER_HOT_SWITCH', pow(2, 12));
+       ('EDIT_USER_HOT_SWITCH', pow(2, 12)),
+       ('HOT_SWITCH_TO_ANOTHER_USER', pow(2, 13));
 
 
 
