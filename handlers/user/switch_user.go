@@ -40,7 +40,7 @@ func (s *Service) SwitchUser(
 		response := resp.Service{Writer: &w, Logger: s.Logger, Operation: method}
 
 		query := r.URL.Query()
-		field, err := strconv.Atoi(query.Get("id"))
+		switchId, err := strconv.Atoi(query.Get("id"))
 		if err != nil {
 			response.WrongParameter()
 			return
@@ -53,17 +53,25 @@ func (s *Service) SwitchUser(
 			return
 		}
 
-		if !isSwitchAllow(userProvider, currentUserId, field, log, rightsProvider) {
+		if !isSwitchAllow(userProvider, currentUserId, switchId, log, rightsProvider) {
 			response.NotAllowed()
 			return
 		}
 
 		var savingParams = make(map[string]interface{}, 1)
-		savingParams[cookie.SwitchedTo] = field
+		savingParams[cookie.SwitchedTo] = switchId
 
 		sessionProvider.Save(r, w, savingParams)
 
-		response.OK()
+		var data = make(map[string]string, 2)
+
+		currentUser, _ := userProvider.GetById(currentUserId)
+		switchUser, _ := userProvider.GetById(switchId)
+
+		data["icon1"] = currentUser.Icon
+		data["icon2"] = switchUser.Icon
+
+		response.OKWithData(data)
 
 	}
 }
