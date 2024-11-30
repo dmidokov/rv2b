@@ -2,7 +2,7 @@ package navigation
 
 import (
 	e "github.com/dmidokov/rv2/lib/entitie"
-	"github.com/dmidokov/rv2/response"
+	resp "github.com/dmidokov/rv2/response"
 	"net/http"
 )
 
@@ -22,7 +22,7 @@ func (s *Service) GetNavigation(userProvider userProvider, navigationProvider na
 
 		log := s.Logger
 		method := "api.navigation.get"
-		response := resp.Service{Writer: &w, Logger: s.Logger, Operation: method}
+		response := resp.New(&w, s.Logger, method)
 
 		//navigationService := navigation.Service{DB: s.DB, CookieStore: s.CookieStore, Log: s.Logger}
 		//userService := user.Service{DB: s.DB, CookieStore: s.CookieStore, Log: s.Logger}

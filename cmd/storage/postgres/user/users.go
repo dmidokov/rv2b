@@ -3,7 +3,7 @@ package user
 import (
 	"context"
 	"fmt"
-	e "github.com/dmidokov/rv2/lib/entitie"
+	"github.com/dmidokov/rv2/lib/entitie"
 	"github.com/dmidokov/rv2/session/cookie"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -37,9 +37,9 @@ func New(DB *pgxpool.Pool, CookieStore SessionStorage, Log *logrus.Logger) *Serv
 	}
 }
 
-func (u *Service) GetUserByLoginAndOrganization(login string, organizationId int) (*e.User, error) {
+func (u *Service) GetUserByLoginAndOrganization(login string, organizationId int) (*entitie.User, error) {
 
-	var user = &e.User{}
+	var user = &entitie.User{}
 
 	query := `select * from users where user_name = $1 and organization_id=$2;`
 
@@ -55,7 +55,7 @@ func (u *Service) GetUserByLoginAndOrganization(login string, organizationId int
 	return user, nil
 }
 
-func (u *Service) GetByOrganizationId(userId int) ([]*e.UserShort, error) {
+func (u *Service) GetByOrganizationId(userId int) ([]*entitie.UserShort, error) {
 
 	query := `
 			select distinct 
@@ -123,10 +123,10 @@ func (u *Service) GetOrganizationIdFromSession(r *http.Request) int {
 	}
 }
 
-func scanRows(rows pgx.Rows) ([]*e.UserShort, error) {
-	var result []*e.UserShort
+func scanRows(rows pgx.Rows) ([]*entitie.UserShort, error) {
+	var result []*entitie.UserShort
 	for rows.Next() {
-		item := &e.UserShort{}
+		item := &entitie.UserShort{}
 		err := rows.Scan(&item.Id, &item.UserName, &item.CreateTime, &item.UpdateTime, &item.Type)
 		if err != nil {
 			return nil, err
@@ -150,8 +150,8 @@ func (u *Service) Delete(userId int) error {
 	return nil
 }
 
-func (u *Service) GetById(userId int) (*e.User, error) {
-	var user = &e.User{}
+func (u *Service) GetById(userId int) (*entitie.User, error) {
+	var user = &entitie.User{}
 
 	query := `select * from  users where user_id = $1;`
 
@@ -167,7 +167,7 @@ func (u *Service) GetById(userId int) (*e.User, error) {
 	return user, nil
 }
 
-func (u *Service) Create(user *e.User) (int, error) {
+func (u *Service) Create(user *entitie.User) (int, error) {
 	// Обновляя поля в этом запросе, обновить и update
 	query := `
 		INSERT INTO users
@@ -200,17 +200,17 @@ func (u *Service) Create(user *e.User) (int, error) {
 	return id, nil
 }
 
-func (u *Service) GetIcon(userId int) *e.UserIcon {
+func (u *Service) GetIcon(userId int) *entitie.UserIcon {
 	user, err := u.GetById(userId)
 	if err != nil {
-		return &e.UserIcon{ImageName: ""}
+		return &entitie.UserIcon{ImageName: ""}
 	}
 
-	return &e.UserIcon{ImageName: user.Icon}
+	return &entitie.UserIcon{ImageName: user.Icon}
 }
 
-func scanUser(row pgx.Row) (*e.User, error) {
-	var user = &e.User{}
+func scanUser(row pgx.Row) (*entitie.User, error) {
+	var user = &entitie.User{}
 
 	err := row.Scan(
 		&user.Id,
@@ -258,7 +258,7 @@ func (u *Service) SetUserCreateRelations(creatorId int, createdId int) error {
 	return nil
 }
 
-func (u *Service) GetChild(userId int) ([]*e.UserShort, error) {
+func (u *Service) GetChild(userId int) ([]*entitie.UserShort, error) {
 
 	query := `
 			select distinct 
@@ -283,8 +283,8 @@ func (u *Service) GetChild(userId int) ([]*e.UserShort, error) {
 
 }
 
-func (u *Service) GetInfo(userId int, infoLevel int) (*e.UserInfoFull, error) {
-	userFull := e.UserInfoFull{}
+func (u *Service) GetInfo(userId int, infoLevel int) (*entitie.UserInfoFull, error) {
+	userFull := entitie.UserInfoFull{}
 	switch infoLevel {
 	case InfoFull:
 
@@ -317,7 +317,7 @@ func (u *Service) GetInfo(userId int, infoLevel int) (*e.UserInfoFull, error) {
 	return &userFull, nil
 }
 
-func (u *Service) UpdateUser(user *e.User) (*e.User, error) {
+func (u *Service) UpdateUser(user *entitie.User) (*entitie.User, error) {
 	// Обновляя поля в этом запросе, обновить и create
 	query := `
 		update users set 
@@ -368,7 +368,7 @@ func (u *Service) GetParentId(userId int) (int, error) {
 	return *id, nil
 }
 
-func (u *Service) GetParentUser(userId int) (*e.User, error) {
+func (u *Service) GetParentUser(userId int) (*entitie.User, error) {
 	query := `
 			select distinct * 
 			from 
@@ -409,7 +409,7 @@ func (u *Service) RemoveHotSwitchRelation(fromId, toId int) error {
 
 // TODO: две функции ниже делают одно и тоже, надо объединить
 
-func (u *Service) GetHotSwitch(userId int) ([]*e.UserShort, error) {
+func (u *Service) GetHotSwitch(userId int) ([]*entitie.UserShort, error) {
 	query := `select users.user_id, users.user_name, users.create_time, users.update_time, users.user_type from users as users, hot_switch_relations as switch where users.user_id = switch.to_user and switch.from_user=$1`
 	rows, err := u.DB.Query(context.Background(), query, userId)
 	if err != nil {
@@ -421,7 +421,7 @@ func (u *Service) GetHotSwitch(userId int) ([]*e.UserShort, error) {
 	return scanRows(rows)
 }
 
-func (u *Service) GetUsersToSwitch(userId int) ([]*e.UserSwitcher, error) {
+func (u *Service) GetUsersToSwitch(userId int) ([]*entitie.UserSwitcher, error) {
 	query := `select users.user_id, users.user_name, users.account_icon from users as users, hot_switch_relations as switch where users.user_id=switch.to_user and switch.from_user=$1`
 	rows, err := u.DB.Query(context.Background(), query, userId)
 	if err != nil {
@@ -430,9 +430,9 @@ func (u *Service) GetUsersToSwitch(userId int) ([]*e.UserSwitcher, error) {
 
 	defer rows.Close()
 
-	var result []*e.UserSwitcher
+	var result []*entitie.UserSwitcher
 	for rows.Next() {
-		item := &e.UserSwitcher{}
+		item := &entitie.UserSwitcher{}
 		err := rows.Scan(&item.Id, &item.UserName, &item.Icon)
 		if err != nil {
 			return nil, err
@@ -443,7 +443,7 @@ func (u *Service) GetUsersToSwitch(userId int) ([]*e.UserSwitcher, error) {
 }
 
 func (u *Service) CanUserSwitchToId(from, to int) bool {
-	r := e.HotSwitchRelations{}
+	r := entitie.HotSwitchRelations{}
 	query := `select * from hot_switch_relations where from_user=$1 and to_user=$2`
 	row := u.DB.QueryRow(context.Background(), query, from, to)
 

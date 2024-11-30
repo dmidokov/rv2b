@@ -3,7 +3,7 @@ package rights
 import (
 	"context"
 	"fmt"
-	e "github.com/dmidokov/rv2/lib/entitie"
+	"github.com/dmidokov/rv2/lib/entitie"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/sirupsen/logrus"
 	"strconv"
@@ -21,7 +21,7 @@ func New(DB *pgxpool.Pool, Log *logrus.Logger) *Service {
 	}
 }
 
-func (rg *Service) CheckUserRight(user *e.User, right int) bool {
+func (rg *Service) CheckUserRight(user *entitie.User, right int) bool {
 	fmt.Println(user.Rights)
 	fmt.Println(right)
 	if (user.Rights & right) == right {
@@ -30,7 +30,7 @@ func (rg *Service) CheckUserRight(user *e.User, right int) bool {
 	return false
 }
 
-func (rg *Service) GetRightsNamesByIds(ids []int) (*[]e.RightNameValue, error) {
+func (rg *Service) GetRightsNamesByIds(ids []int) (*[]entitie.RightNameValue, error) {
 	query := `select name, value from rights_names where 1=0 `
 
 	for _, v := range ids {
@@ -43,9 +43,9 @@ func (rg *Service) GetRightsNamesByIds(ids []int) (*[]e.RightNameValue, error) {
 		return nil, err
 	}
 
-	var result []e.RightNameValue
+	var result []entitie.RightNameValue
 	for rows.Next() {
-		item := e.RightNameValue{}
+		item := entitie.RightNameValue{}
 		err := rows.Scan(&item.Name, &item.Value)
 		if err != nil {
 			return nil, err
@@ -60,7 +60,7 @@ func (rg *Service) GetRightsNamesByIds(ids []int) (*[]e.RightNameValue, error) {
 // GetByUserRights возвращает индексы, названия и значения прав пользователя.
 // Пользователям назначены права в таблице users в виде числа, данный метод вернет
 // указанные выше значения только для тех прав которые выставлены для пользователя
-func (rg *Service) GetByUserRights(rightsValue int) (*[]e.Right, error) {
+func (rg *Service) GetByUserRights(rightsValue int) (*[]entitie.Right, error) {
 	query := "select * from rights_names where value & $1 > 0"
 
 	rows, err := rg.DB.Query(context.Background(), query, rightsValue)
@@ -69,9 +69,9 @@ func (rg *Service) GetByUserRights(rightsValue int) (*[]e.Right, error) {
 		return nil, err
 	}
 
-	var result []e.Right
+	var result []entitie.Right
 	for rows.Next() {
-		item := e.Right{}
+		item := entitie.Right{}
 		err := rows.Scan(&item.Id, &item.Name, &item.Value)
 		if err != nil {
 			return nil, err
@@ -82,13 +82,13 @@ func (rg *Service) GetByUserRights(rightsValue int) (*[]e.Right, error) {
 	return &result, nil
 }
 
-func (rg *Service) GetAvailableEntities(userId int, groupId int) (*[]e.Entities, error) {
+func (rg *Service) GetAvailableEntities(userId int, groupId int) (*[]entitie.Entities, error) {
 	query := `select * from rights where user_id = $1 AND entity_group=$2`
 	rows, err := rg.DB.Query(context.Background(), query, userId, groupId)
 
-	var result []e.Entities
+	var result []entitie.Entities
 	for rows.Next() {
-		item := e.Entities{}
+		item := entitie.Entities{}
 		err := rows.Scan(&item.UserId, &item.EntityId, &item.GroupId)
 		if err != nil {
 			return nil, err

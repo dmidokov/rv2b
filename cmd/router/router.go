@@ -11,15 +11,15 @@ import (
 	"github.com/dmidokov/rv2/handlers/sse"
 	userH "github.com/dmidokov/rv2/handlers/user"
 	"github.com/dmidokov/rv2/lib/entitie"
-	"github.com/dmidokov/rv2/response"
+	resp "github.com/dmidokov/rv2/response"
 	"github.com/dmidokov/rv2/session/cookie"
-	"strings"
-
 	branchS "github.com/dmidokov/rv2/storage/postgres/branch"
 	navigationS "github.com/dmidokov/rv2/storage/postgres/navigation"
 	orgS "github.com/dmidokov/rv2/storage/postgres/organization"
 	"github.com/dmidokov/rv2/storage/postgres/rights"
 	"github.com/dmidokov/rv2/storage/postgres/user"
+	"strings"
+
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/sirupsen/logrus"
@@ -142,7 +142,7 @@ func (r *Router) loggingMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		method := "Login middleware"
 		log := r.Logger
 
-		responses := resp.Service{Writer: &w, Logger: log, Operation: method}
+		responses := resp.New(&w, log, method)
 
 		if authenticated, ok := r.CookieStore.GetByKey(req, cookie.Authenticated); ok && authenticated.(bool) {
 			r.CookieStore.Save(req, w, make(map[string]interface{}))

@@ -2,8 +2,8 @@ package organization
 
 import (
 	"github.com/dmidokov/rv2/lib"
-	"github.com/dmidokov/rv2/lib/entitie"
-	"github.com/dmidokov/rv2/response"
+	entitie2 "github.com/dmidokov/rv2/lib/entitie"
+	resp "github.com/dmidokov/rv2/response"
 	"github.com/dmidokov/rv2/storage/postgres/rights"
 	"github.com/sirupsen/logrus"
 	"net/http"
@@ -15,11 +15,11 @@ type ShortResponse struct {
 }
 
 type OrgGetter interface {
-	GetAll() ([]*entitie.Organization, error)
+	GetAll() ([]*entitie2.Organization, error)
 }
 
 type userProvider interface {
-	GetById(userId int) (*entitie.User, error)
+	GetById(userId int) (*entitie2.User, error)
 	GetOrganizationIdFromSession(r *http.Request) int
 	GetUserIdFromSession(r *http.Request) int
 }
