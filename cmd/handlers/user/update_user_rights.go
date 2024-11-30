@@ -3,7 +3,7 @@ package user
 import (
 	"encoding/json"
 	"github.com/dmidokov/rv2/lib"
-	e "github.com/dmidokov/rv2/lib/entitie"
+	"github.com/dmidokov/rv2/lib/entitie"
 	resp "github.com/dmidokov/rv2/response"
 	"github.com/sirupsen/logrus"
 	"math"
@@ -17,17 +17,17 @@ type UpdateUserRightsRequest struct {
 }
 
 type rightsSetter interface {
-	CheckUserRight(user *e.User, right int) bool
+	CheckUserRight(user *entitie.User, right int) bool
 }
 
 type userRightsUpdater interface {
-	GetById(userId int) (*e.User, error)
+	GetById(userId int) (*entitie.User, error)
 	GetUserIdFromSession(r *http.Request) int
-	UpdateUser(user *e.User) (*e.User, error)
+	UpdateUser(user *entitie.User) (*entitie.User, error)
 }
 
 type navigationUpdater interface {
-	Set(userId int, navigationId int, groupId int) (*e.NavigationAvailable, error)
+	Set(userId int, navigationId int, groupId int) (*entitie.NavigationAvailable, error)
 	Delete(userId int, navigationId int, groupId int) error
 }
 

@@ -1,7 +1,7 @@
 package user
 
 import (
-	e "github.com/dmidokov/rv2/lib/entitie"
+	"github.com/dmidokov/rv2/lib/entitie"
 	resp "github.com/dmidokov/rv2/response"
 	"github.com/dmidokov/rv2/storage/postgres/rights"
 	"github.com/gorilla/mux"
@@ -10,18 +10,18 @@ import (
 )
 
 type navigationProvider interface {
-	Get(userId int) (*[]e.Navigation, error)
+	Get(userId int) (*[]entitie.Navigation, error)
 }
 
 type userGetter interface {
-	GetById(userId int) (*e.User, error)
+	GetById(userId int) (*entitie.User, error)
 	GetOrganizationIdFromSession(r *http.Request) int
 	GetUserIdFromSession(r *http.Request) int
-	GetByOrganizationId(userId int) ([]*e.UserShort, error)
-	GetInfo(userId int, infoLevel int) (*e.UserInfoFull, error)
+	GetByOrganizationId(userId int) ([]*entitie.UserShort, error)
+	GetInfo(userId int, infoLevel int) (*entitie.UserInfoFull, error)
 	GetParentId(userId int) (int, error)
-	GetChild(userId int) ([]*e.UserShort, error)
-	GetHotSwitch(userId int) ([]*e.UserShort, error)
+	GetChild(userId int) ([]*entitie.UserShort, error)
+	GetHotSwitch(userId int) ([]*entitie.UserShort, error)
 }
 
 func (s *Service) GetUser(userProvider userGetter, navigationProvider navigationProvider) http.HandlerFunc {
@@ -98,22 +98,22 @@ func (s *Service) GetUser(userProvider userGetter, navigationProvider navigation
 	}
 }
 
-func getHotSwitchFromUser(userProvider userGetter, userId int) ([]e.UserIdAndLogin, error) {
+func getHotSwitchFromUser(userProvider userGetter, userId int) ([]entitie.UserIdAndLogin, error) {
 	hotSwitch, err := userProvider.GetHotSwitch(userId)
 	if err != nil {
 		return nil, err
 	}
 
-	var hotSwitchList []e.UserIdAndLogin
+	var hotSwitchList []entitie.UserIdAndLogin
 
 	for _, item := range hotSwitch {
-		hotSwitchList = append(hotSwitchList, e.ConvertUserToUserLogin(*item))
+		hotSwitchList = append(hotSwitchList, entitie.ConvertUserToUserLogin(*item))
 	}
 	return hotSwitchList, nil
 
 }
 
-func getCurrentUserRightsWithDescription(userProvider userGetter, currentUserId int, rightsService *rights.Service) ([]e.Right, error) {
+func getCurrentUserRightsWithDescription(userProvider userGetter, currentUserId int, rightsService *rights.Service) ([]entitie.Right, error) {
 
 	currentUser, err := userProvider.GetById(currentUserId)
 
@@ -129,7 +129,7 @@ func getCurrentUserRightsWithDescription(userProvider userGetter, currentUserId 
 	return *currentUserRightsWithDescriptions, nil
 }
 
-func getUserNavigation(navigationProvider navigationProvider, currentUserId int, userId int) ([]e.NavigationInfoPage, error) {
+func getUserNavigation(navigationProvider navigationProvider, currentUserId int, userId int) ([]entitie.NavigationInfoPage, error) {
 	currentUserNavigation, err := navigationProvider.Get(currentUserId)
 	if err != nil {
 		return nil, err
@@ -140,10 +140,10 @@ func getUserNavigation(navigationProvider navigationProvider, currentUserId int,
 		return nil, err
 	}
 
-	var shortNavigationInfo []e.NavigationInfoPage
+	var shortNavigationInfo []entitie.NavigationInfoPage
 
 	for _, v := range *currentUserNavigation {
-		elem := e.NavigationInfoPage{
+		elem := entitie.NavigationInfoPage{
 			Id:      v.Id,
 			Title:   v.Title,
 			Enabled: false,
@@ -158,7 +158,7 @@ func getUserNavigation(navigationProvider navigationProvider, currentUserId int,
 	return shortNavigationInfo, nil
 }
 
-func getChildList(userProvider userGetter, userId int) ([]e.UserIdAndLogin, error) {
+func getChildList(userProvider userGetter, userId int) ([]entitie.UserIdAndLogin, error) {
 
 	parentId, err := userProvider.GetParentId(userId)
 	if err != nil {
@@ -170,10 +170,10 @@ func getChildList(userProvider userGetter, userId int) ([]e.UserIdAndLogin, erro
 		return nil, err
 	}
 
-	var childUsersAndLoginList []e.UserIdAndLogin
+	var childUsersAndLoginList []entitie.UserIdAndLogin
 
 	for _, item := range childUsers {
-		childUsersAndLoginList = append(childUsersAndLoginList, e.ConvertUserToUserLogin(*item))
+		childUsersAndLoginList = append(childUsersAndLoginList, entitie.ConvertUserToUserLogin(*item))
 	}
 	return childUsersAndLoginList, nil
 }

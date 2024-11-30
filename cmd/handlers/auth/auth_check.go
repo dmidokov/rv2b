@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"github.com/dmidokov/rv2/response"
+	resp "github.com/dmidokov/rv2/response"
 	"github.com/dmidokov/rv2/session/cookie"
 	"github.com/sirupsen/logrus"
 	"net/http"

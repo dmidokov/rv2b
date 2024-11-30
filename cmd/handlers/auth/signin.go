@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/dmidokov/rv2/handlers/sse"
-	"github.com/dmidokov/rv2/lib/entitie"
+	entitie2 "github.com/dmidokov/rv2/lib/entitie"
 	resp "github.com/dmidokov/rv2/response"
 	"github.com/dmidokov/rv2/session/cookie"
 	"github.com/jackc/pgx/v4"
@@ -32,11 +32,11 @@ type ErrorResponse struct {
 }
 
 type OrganizationProvider interface {
-	GetByHostName(hostName string) (*entitie.Organization, error)
+	GetByHostName(hostName string) (*entitie2.Organization, error)
 }
 
 type UserProvider interface {
-	GetUserByLoginAndOrganization(login string, organizationId int) (*entitie.User, error)
+	GetUserByLoginAndOrganization(login string, organizationId int) (*entitie2.User, error)
 }
 
 func (s *Service) SignIn(userProvider UserProvider, organizationProvider OrganizationProvider, sse sse.Service) http.HandlerFunc {

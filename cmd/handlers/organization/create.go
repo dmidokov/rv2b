@@ -3,7 +3,7 @@ package organization
 import (
 	"encoding/json"
 	"github.com/dmidokov/rv2/lib"
-	"github.com/dmidokov/rv2/lib/entitie"
+	entitie2 "github.com/dmidokov/rv2/lib/entitie"
 	resp "github.com/dmidokov/rv2/response"
 	"github.com/dmidokov/rv2/storage/postgres/rights"
 	"github.com/dmidokov/rv2/storage/postgres/user"
@@ -22,15 +22,15 @@ type CreateOrganizationRequest struct {
 }
 
 type OrgCreator interface {
-	Create(org *entitie.Organization) (*entitie.Organization, error)
-	GetByHostName(hostName string) (*entitie.Organization, error)
+	Create(org *entitie2.Organization) (*entitie2.Organization, error)
+	GetByHostName(hostName string) (*entitie2.Organization, error)
 }
 
 type UserProvider interface {
-	Create(user *entitie.User) (int, error)
+	Create(user *entitie2.User) (int, error)
 	GetOrganizationIdFromSession(r *http.Request) int
 	GetUserIdFromSession(r *http.Request) int
-	GetById(userId int) (*entitie.User, error)
+	GetById(userId int) (*entitie2.User, error)
 }
 
 type CreateUserRequest struct {
@@ -40,7 +40,7 @@ type CreateUserRequest struct {
 
 type CreateOKResponse struct {
 	resp.Response
-	Data entitie.Organization `json:"data"`
+	Data entitie2.Organization `json:"data"`
 }
 
 func (s *Service) Create(orgCreator OrgCreator, userProvider UserProvider) http.HandlerFunc {
@@ -61,7 +61,7 @@ func (s *Service) Create(orgCreator OrgCreator, userProvider UserProvider) http.
 			return
 		}
 
-		newOrganization := &entitie.Organization{
+		newOrganization := &entitie2.Organization{
 			Name: strings.Trim(orgData.Name, " "),
 			Host: strings.Trim(orgData.Host, " "),
 		}
@@ -103,7 +103,7 @@ func (s *Service) Create(orgCreator OrgCreator, userProvider UserProvider) http.
 
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(userData.Password), s.Config.PasswordCost)
 
-		newUser := entitie.User{
+		newUser := entitie2.User{
 			UserName:       strings.Trim(userData.Name, " "),
 			Password:       string(hashedPassword),
 			OrganizationId: currentUserOrganizationId,

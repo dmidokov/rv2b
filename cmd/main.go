@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"github.com/dmidokov/rv2/config"
+	config2 "github.com/dmidokov/rv2/config"
 	"github.com/dmidokov/rv2/db"
 	"github.com/dmidokov/rv2/handlers/sse"
 	"github.com/dmidokov/rv2/migrations"
@@ -20,7 +20,7 @@ import (
 
 func main() {
 
-	cfg := config.LoadConfig()
+	cfg := config2.LoadConfig()
 
 	logger := setupLog(cfg)
 
@@ -64,12 +64,12 @@ func main() {
 	<-finish
 }
 
-func setupLog(cfg *config.Configuration) *logrus.Logger {
+func setupLog(cfg *config2.Configuration) *logrus.Logger {
 
 	logger := &logrus.Logger{}
 
 	switch cfg.MODE {
-	case config.DEV:
+	case config2.DEV:
 		logger = &logrus.Logger{
 			Out: os.Stdout,
 			Formatter: &logrus.TextFormatter{
@@ -85,7 +85,7 @@ func setupLog(cfg *config.Configuration) *logrus.Logger {
 
 }
 
-func connectDB(cfg *config.Configuration) *pgxpool.Pool {
+func connectDB(cfg *config2.Configuration) *pgxpool.Pool {
 	conn, err := db.ConnectToDB(
 		cfg.DbHost,
 		cfg.DbPort,

@@ -2,6 +2,7 @@ package migrations
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"github.com/dmidokov/rv2/config"
 	"github.com/golang-migrate/migrate/v4"
@@ -48,10 +49,10 @@ func migrateSQL(db *sql.DB, driverName string, migrationsPath string) error {
 
 	println("Migration start")
 
-	if err := m.Down(); err != nil && err != migrate.ErrNoChange {
+	if err := m.Down(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
 		return err
 	}
-	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+	if err := m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
 		return err
 	}
 	return nil
