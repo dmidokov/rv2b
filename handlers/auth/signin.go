@@ -2,7 +2,8 @@ package auth
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
+	"github.com/dmidokov/rv2/handlers/sse"
 	"github.com/dmidokov/rv2/lib/entitie"
 	resp "github.com/dmidokov/rv2/response"
 	"github.com/dmidokov/rv2/session/cookie"
@@ -38,7 +39,7 @@ type UserProvider interface {
 	GetUserByLoginAndOrganization(login string, organizationId int) (*entitie.User, error)
 }
 
-func (s *Service) SignIn(userProvider UserProvider, organizationProvider OrganizationProvider) http.HandlerFunc {
+func (s *Service) SignIn(userProvider UserProvider, organizationProvider OrganizationProvider, sse sse.Service) http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		//TODO: замаскировать в логе пароли
@@ -84,7 +85,7 @@ func (s *Service) SignIn(userProvider UserProvider, organizationProvider Organiz
 		foundOrganization, err := organizationProvider.GetByHostName(r.Host)
 
 		if err != nil {
-			if err == pgx.ErrNoRows {
+			if errors.Is(err, pgx.ErrNoRows) {
 				contextLogger.WithFields(
 					logrus.Fields{
 						"host": r.Host,
@@ -109,7 +110,7 @@ func (s *Service) SignIn(userProvider UserProvider, organizationProvider Organiz
 
 		user, err := userProvider.GetUserByLoginAndOrganization(login, foundOrganization.Id)
 		if err != nil {
-			if err == pgx.ErrNoRows {
+			if errors.Is(err, pgx.ErrNoRows) {
 				contextLogger.Errorf("Пользователь не найден: %s", err.Error())
 
 				response.WithError("UserNotFound")
@@ -134,8 +135,6 @@ func (s *Service) SignIn(userProvider UserProvider, organizationProvider Organiz
 		}
 
 		var savingParams = make(map[string]interface{}, 3)
-
-		fmt.Println(user.Id)
 
 		savingParams[cookie.Authenticated] = true
 		savingParams[cookie.UserId] = user.Id

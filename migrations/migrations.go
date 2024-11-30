@@ -13,9 +13,6 @@ func Init(cfg *config.Configuration) {
 
 	s := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", cfg.DbUser, cfg.DbPassword, cfg.DbHost, cfg.DbPort, cfg.DbName)
 
-	fmt.Println("OLD::postgres://remonttiuser:deltad2dt@127.0.0.1:5432/remonttiv2db?sslmode=disable")
-	fmt.Println("NEW", s)
-
 	db, _ := sql.Open("postgres", s)
 
 	err := db.Ping()
