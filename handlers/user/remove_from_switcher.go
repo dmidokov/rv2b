@@ -2,7 +2,6 @@ package user
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/dmidokov/rv2/lib"
 	"github.com/dmidokov/rv2/lib/entitie"
 	resp "github.com/dmidokov/rv2/response"
@@ -25,8 +24,6 @@ func (s *Service) RemoveFromSwitcher(
 	rightsProvider rightsSetter,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-
-		fmt.Println("=========================")
 
 		if r.Method == http.MethodOptions {
 			return

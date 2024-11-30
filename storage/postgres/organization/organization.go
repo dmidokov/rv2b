@@ -7,6 +7,7 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/sirupsen/logrus"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -29,8 +30,9 @@ func New(DB *pgxpool.Pool, CookieStore SessionStorage, Log *logrus.Logger) *Serv
 }
 
 func (o *Service) GetByHostName(hostName string) (*e.Organization, error) {
+	hostWithoutPort := strings.Split(hostName, ":")[0]
 	query := "select * from organizations where host=$1"
-	row := o.DB.QueryRow(context.Background(), query, hostName)
+	row := o.DB.QueryRow(context.Background(), query, hostWithoutPort)
 
 	organization := &e.Organization{}
 

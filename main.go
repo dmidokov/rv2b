@@ -4,15 +4,16 @@ import (
 	"context"
 	"github.com/dmidokov/rv2/config"
 	"github.com/dmidokov/rv2/db"
-	"github.com/dmidokov/rv2/handlers"
+	"github.com/dmidokov/rv2/handlers/sse"
 	"github.com/dmidokov/rv2/migrations"
+	"github.com/dmidokov/rv2/router"
 	"github.com/dmidokov/rv2/session/cookie"
-	"github.com/dmidokov/rv2/sse"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/sirupsen/logrus"
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
@@ -28,6 +29,8 @@ func main() {
 
 	conn := connectDB(cfg)
 
+	ctx, _ := context.WithTimeout(context.Background(), time.Second)
+
 	if cfg.DeleteTablesBeforeStart == 1 {
 		logger.Info("Удаление схемы")
 		err := db.DropSchema(conn, cfg.DbName)
@@ -42,8 +45,7 @@ func main() {
 
 	store := cookie.New(cfg.SessionsSecret)
 
-	handler := handlers.New(conn, cfg, store, logger, eventService)
-
+	handler := router.New(ctx, conn, cfg, store, logger, eventService)
 	router, err := handler.Router()
 
 	if err != nil {
@@ -55,7 +57,7 @@ func main() {
 	}()
 
 	go func() {
-		logger.Fatal(http.ListenAndServe(":"+cfg.HttpPort, http.HandlerFunc(handlers.Redirect)))
+		logger.Fatal(http.ListenAndServe(":"+cfg.HttpPort, http.HandlerFunc(handler.Redirect)))
 	}()
 
 	finish := make(chan bool)
