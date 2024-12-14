@@ -9,6 +9,8 @@ import (
 	"net/http"
 )
 
+const NavigationLeftType = "navigation"
+
 type Service struct {
 	DB          *pgxpool.Pool
 	CookieStore SessionStorage
@@ -25,24 +27,25 @@ func New(DB *pgxpool.Pool, CookieStore SessionStorage, Log *logrus.Logger) *Serv
 	}
 }
 
-func (o *Service) Get(userId int) (*[]e.Navigation, error) {
+func (o *Service) Get(userId int, navigationType string) (*[]e.Navigation, error) {
 
 	query := `
 			SELECT 
 			    navigation.navigation_id,
 			    navigation.title,
 			    navigation.tooltip_text,
-			    navigation.navigation_group,
+			    navigation.rights_category_id,
 			    navigation.icon,
 			    navigation.link
 			FROM 
-			    navigation, rights 
+			    navigation, rights, right_category_ids 
 			WHERE 
-			    rights.entity_group = $1 AND
+			    right_category_ids.category_title = $1 AND
+			    rights.entity_group = right_category_ids.category_id AND
 			    rights.user_id = $2 AND
 			    rights.entity_id = navigation.navigation_id;`
 
-	rows, err := o.DB.Query(context.Background(), query, 1, userId)
+	rows, err := o.DB.Query(context.Background(), query, navigationType, userId)
 	if err != nil {
 		return nil, err
 	}

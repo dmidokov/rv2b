@@ -1,6 +1,7 @@
 package user
 
 import (
+	"github.com/dmidokov/rv2/handlers/navigation"
 	"github.com/dmidokov/rv2/lib/entitie"
 	resp "github.com/dmidokov/rv2/response"
 	"github.com/dmidokov/rv2/storage/postgres/rights"
@@ -10,7 +11,7 @@ import (
 )
 
 type navigationProvider interface {
-	Get(userId int) (*[]entitie.Navigation, error)
+	Get(userId int, navigationType string) (*[]entitie.Navigation, error)
 }
 
 type userGetter interface {
@@ -24,7 +25,12 @@ type userGetter interface {
 	GetHotSwitch(userId int) ([]*entitie.UserShort, error)
 }
 
-func (s *Service) GetUser(userProvider userGetter, navigationProvider navigationProvider) http.HandlerFunc {
+type rightsProvider interface {
+	GetGroupsByOrganizationId(organizationId int) ([]entitie.Group, error)
+	GetUserGroupsWithName(userId int) ([]entitie.GroupNameAndIds, error)
+}
+
+func (s *Service) GetUser(userProvider userGetter, navigationProvider navigationProvider, rightsProvider rightsProvider) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodOptions {
 			return
@@ -94,8 +100,27 @@ func (s *Service) GetUser(userProvider userGetter, navigationProvider navigation
 			return
 		}
 
+		organizationId := userProvider.GetOrganizationIdFromSession(r)
+		fullUserInfo.Groups, err = getGroupList(rightsProvider, organizationId)
+		if err != nil {
+			log.Errorf("Error: %s", err.Error())
+			response.InternalServerError()
+			return
+		}
+
+		fullUserInfo.AssignedGroups, err = rightsProvider.GetUserGroupsWithName(userId)
+		if err != nil {
+			log.Errorf("Error: %s", err.Error())
+			response.InternalServerError()
+			return
+		}
+
 		response.OKWithData(fullUserInfo)
 	}
+}
+
+func getGroupList(provider rightsProvider, organizationId int) ([]entitie.Group, error) {
+	return provider.GetGroupsByOrganizationId(organizationId)
 }
 
 func getHotSwitchFromUser(userProvider userGetter, userId int) ([]entitie.UserIdAndLogin, error) {
@@ -130,12 +155,12 @@ func getCurrentUserRightsWithDescription(userProvider userGetter, currentUserId 
 }
 
 func getUserNavigation(navigationProvider navigationProvider, currentUserId int, userId int) ([]entitie.NavigationInfoPage, error) {
-	currentUserNavigation, err := navigationProvider.Get(currentUserId)
+	currentUserNavigation, err := navigationProvider.Get(currentUserId, navigation.TypeNavigationLeft)
 	if err != nil {
 		return nil, err
 	}
 
-	searchUserAvailableNavigation, err := navigationProvider.Get(userId)
+	searchUserAvailableNavigation, err := navigationProvider.Get(userId, navigation.TypeNavigationLeft)
 	if err != nil {
 		return nil, err
 	}

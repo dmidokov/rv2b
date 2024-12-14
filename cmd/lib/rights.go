@@ -1,12 +1,12 @@
 package lib
 
 const (
-	AddUser = 1 << (iota)
-	_       //EditUser
+	AddUser  = 1 << (iota)
+	EditUser //EditUser
 	DeleteUser
 	AddOrganization
-	_ //EditOrganization
-	_ //DeleteOrganization // todo: добавить проверку этого права при удалении
+	EditOrganization   //EditOrganization
+	DeleteOrganization //DeleteOrganization // todo: добавить проверку этого права при удалении
 	ViewOrganization
 	ViewBranchList
 	AddBranch
@@ -15,4 +15,11 @@ const (
 	EditUserNavigation
 	EditUserHotSwitch
 	HotSwitchToAnotherUser
+	ViewUsers
+	ViewUserGroups
+	EditUserGroups
+	DeleteUserGroups
+	CreateUserGroup
+	AssignUserGroup
+	UnassignUserGroup
 )

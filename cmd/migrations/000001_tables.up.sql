@@ -1,5 +1,5 @@
 -- DROP SCHEMA IF EXISTS remonttiv2 CASCADE;
-CREATE SCHEMA IF NOT EXISTS RV2_DB_NAME;
+CREATE SCHEMA IF NOT EXISTS remonttiv2db;
 
 -- user_type
 --     0 - Сервисная/Управляющая учетка
@@ -124,8 +124,7 @@ CREATE TABLE IF NOT EXISTS groups
 CREATE TABLE IF NOT EXISTS user_groups
 (
     user_id  integer NOT NULL,
-    group_id integer REFERENCES groups ON DELETE CASCADE,
-    UNIQUE (user_id, group_id)
+    group_id integer REFERENCES groups ON DELETE CASCADE
 )
     TABLESPACE pg_default;
 
@@ -159,9 +158,9 @@ VALUES (2, 2, 'remontti', '$2a$14$adZQlMqeE3qgAgGv.25PhuREomuM.zjCVIrLdoEUCpruv5
 
 INSERT INTO organizations
 (organization_id, organization_name, host, create_time, update_time, creator)
-VALUES (1, 'control', 'control.RV2_DOMAIN_NAME', 0, 0, 1),
-       (2, 'remontti', 'work.RV2_DOMAIN_NAME', 1697057352, 1697057352, 1),
-       (3, 'test', 'test.RV2_DOMAIN_NAME', 0, 0, 1);
+VALUES (1, 'control', 'control.remontti.local', 0, 0, 1),
+       (2, 'remontti', 'work.remontti.local', 1697057352, 1697057352, 1),
+       (3, 'test', 'test.remontti.local', 0, 0, 1);
 
 
 
@@ -231,8 +230,7 @@ VALUES ('ADD_USER', pow(2, 0)),
        ('EDIT_USER_GROUPS', pow(2, 16)),
        ('DELETE_USER_GROUPS', pow(2, 17)),
        ('CREATE_USER_GROUPS', pow(2, 18)),
-       ('ASSIGN_GROUP', pow(2, 19)),
-       ('UNASSIGN_GROUP', pow(2, 20));
+       ('ASSIGN_GROUP', pow(2, 19));
 
 
 

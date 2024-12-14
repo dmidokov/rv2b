@@ -1,6 +1,6 @@
 /secrets
 /docker
-/cmd/migrations/000001_tables.up.sql
+/cmd/migrations/1.sql
 docker/dockerfile
 .env
 ./main
@@ -12,7 +12,7 @@ r
 ./Makefile
 Makefile
 rv2
-/cmd/migrations/000001_tables.up.sql
+/cmd/migrations/1.sql
 /cmd/migrations/000001_tables.down.sql
 backend.code-workspace
 main

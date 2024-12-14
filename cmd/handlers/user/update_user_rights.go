@@ -18,6 +18,8 @@ type UpdateUserRightsRequest struct {
 
 type rightsSetter interface {
 	CheckUserRight(user *entitie.User, right int) bool
+	AssignUserGroup(userId int, groupId int) error
+	UnassignUserGroup(userId int, groupId int) error
 }
 
 type userRightsUpdater interface {
@@ -60,7 +62,7 @@ func (s *Service) Update(
 			return
 		}
 
-		s.Logger.Info(field)
+		s.Logger.Info("Field value is: " + field + ".")
 
 		switch field {
 		case "rights":
@@ -82,6 +84,9 @@ func updateRights(
 	rightsProvider rightsSetter,
 	logger *logrus.Logger,
 ) {
+
+	logger.Info("start rights update")
+
 	currentUserId := userProvider.GetUserIdFromSession(r)
 	if currentUserId == 0 {
 		logger.Info("unauthorized")
@@ -89,12 +94,14 @@ func updateRights(
 		return
 	}
 
+	logger.Info("get current user")
 	currentUser, err := userProvider.GetById(currentUserId)
 	if err != nil {
 		logger.Error("internal server error")
 		response.InternalServerError()
 	}
 
+	logger.Info("get user to update")
 	userToUpdate, err := userProvider.GetById(request.UserId)
 	if err != nil {
 		logger.Info("user not found")
@@ -102,18 +109,24 @@ func updateRights(
 		return
 	}
 
+	logger.Infof("check user rights\n user: %d, checked rights: %d", currentUser.Rights, lib.EditUserRights)
 	if !rightsProvider.CheckUserRight(currentUser, lib.EditUserRights) {
 		logger.Info("not allowed")
 		response.NotAllowed()
 		return
 	}
 
+	logger.Infof("Before user rights: %d", userToUpdate.Rights)
 	if request.Set {
+		logger.Info("Is request set")
 		userToUpdate.Rights = request.Value | userToUpdate.Rights
 	} else {
+		logger.Info("Is request unset")
 		userToUpdate.Rights = (math.MaxInt ^ request.Value) & userToUpdate.Rights
 	}
+	logger.Infof("After user rights: %d", userToUpdate.Rights)
 
+	logger.Info("Update user")
 	_, err = userProvider.UpdateUser(userToUpdate)
 	if err != nil {
 		logger.Error("internal server error")

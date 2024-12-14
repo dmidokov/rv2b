@@ -6,6 +6,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+const TypeNavigationLeft = "navigation"
+
 type Service struct {
 	Logger *logrus.Logger
 	DB     *pgxpool.Pool

@@ -51,6 +51,8 @@ type UserInfoFull struct {
 	Navigation                 []NavigationInfoPage `json:"navigation"`
 	Childs                     []UserIdAndLogin     `json:"childs"`
 	HotSwitch                  []UserIdAndLogin     `json:"hotSwitch"`
+	Groups                     []Group              `json:"groups"`
+	AssignedGroups             []GroupNameAndIds    `json:"assignedGroups"`
 }
 
 type UserIdAndLogin struct {

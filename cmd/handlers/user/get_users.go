@@ -1,6 +1,8 @@
 package user
 
 import (
+	"fmt"
+	"github.com/dmidokov/rv2/lib"
 	e "github.com/dmidokov/rv2/lib/entitie"
 	resp "github.com/dmidokov/rv2/response"
 	"net/http"
@@ -16,7 +18,7 @@ type userProvider interface {
 	GetChild(userId int) ([]*e.UserShort, error)
 }
 
-func (s *Service) GetUsers(userProvider userProvider) http.HandlerFunc {
+func (s *Service) GetUsers(userProvider userProvider, rightsProvider rightsSetter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodOptions {
 			return
@@ -32,21 +34,37 @@ func (s *Service) GetUsers(userProvider userProvider) http.HandlerFunc {
 			response.Unauthorized()
 			return
 		}
-
+		log.Info(method)
 		currentUserId := userProvider.GetUserIdFromSession(r)
 		if currentUserId == 0 {
 			response.Unauthorized()
 			return
 		}
-
-		items, err := userProvider.GetByOrganizationId(currentUserId)
+		log.Info(method)
+		currentUser, err := userProvider.GetById(currentUserId)
 		if err != nil {
-			log.Errorf("Error: %s", err.Error())
-
 			response.InternalServerError()
 			return
 		}
+		log.Info(method)
 
-		response.OKWithData(items)
+		fmt.Println(currentUser.Rights)
+		fmt.Println(lib.ViewUsers)
+		fmt.Println(rightsProvider.CheckUserRight(currentUser, lib.ViewUsers))
+
+		if rightsProvider.CheckUserRight(currentUser, lib.ViewUsers) {
+			items, err := userProvider.GetByOrganizationId(currentUserId)
+			if err != nil {
+				log.Errorf("Error: %s", err.Error())
+
+				response.InternalServerError()
+				return
+			}
+
+			response.OKWithData(items)
+			return
+		}
+
+		response.NotAllowed()
 	}
 }

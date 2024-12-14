@@ -39,7 +39,7 @@ func (s *Service) Create(userProvider userCreator) http.HandlerFunc {
 
 		log := s.Logger
 		method := "api.user.add"
-
+		log.Info("Start user create method")
 		response := resp.Service{Writer: &w, Logger: s.Logger, Operation: method}
 
 		userData := CreateUserRequest{}

@@ -6,6 +6,7 @@ import (
 	"github.com/dmidokov/rv2/config"
 	"github.com/dmidokov/rv2/handlers/auth"
 	branchH "github.com/dmidokov/rv2/handlers/branch"
+	"github.com/dmidokov/rv2/handlers/group"
 	navigationH "github.com/dmidokov/rv2/handlers/navigation"
 	orgH "github.com/dmidokov/rv2/handlers/organization"
 	"github.com/dmidokov/rv2/handlers/sse"
@@ -62,6 +63,7 @@ func (r *Router) Router() (*mux.Router, error) {
 	branchHandler := branchH.New(r.Logger, r.DB, r.Config)
 	userHandler := userH.New(r.Logger, r.DB, r.Config)
 	navigationHandler := navigationH.New(r.Logger, r.DB, r.Config)
+	groupHandler := group.New(r.Logger, r.DB, r.Config)
 
 	userService := user.New(r.DB, r.CookieStore, r.Logger)
 	orgService := orgS.New(r.DB, r.CookieStore, r.Logger)
@@ -110,16 +112,26 @@ func (r *Router) Router() (*mux.Router, error) {
 		Subrouter()
 
 	userRouter.Use(r.loggingMiddleware1)
-	userRouter.HandleFunc("", userHandler.GetUsers(userService)).Methods(http.MethodGet)
+	userRouter.HandleFunc("", userHandler.GetUsers(userService, rightsService)).Methods(http.MethodGet)
 	userRouter.HandleFunc("", userHandler.Create(userService)).Methods(http.MethodPut)
 	userRouter.HandleFunc("/icon", userHandler.GetUserIcon(userService)).Methods(http.MethodGet)
 	userRouter.HandleFunc("/{id:[0-9]+}", userHandler.DeleteUser(userService)).Methods(http.MethodDelete)
-	userRouter.HandleFunc("/{id:[0-9]+}", userHandler.GetUser(userService, navigationService)).Methods(http.MethodGet)
+	userRouter.HandleFunc("/{id:[0-9]+}", userHandler.GetUser(userService, navigationService, rightsService)).Methods(http.MethodGet)
 	userRouter.HandleFunc("/update", userHandler.Update(userService, rightsService, navigationService)).Methods(http.MethodPost)
 	userRouter.HandleFunc("/switcher", userHandler.AddToSwitcher(userService, rightsService)).Methods(http.MethodPut)
+	userRouter.HandleFunc("/group", userHandler.AddGroup(userService, rightsService)).Methods(http.MethodPut)
+	userRouter.HandleFunc("/group", userHandler.DeleteGroup(userService, rightsService)).Methods(http.MethodDelete)
 	userRouter.HandleFunc("/switcher", userHandler.RemoveFromSwitcher(userService, rightsService)).Methods(http.MethodDelete)
 	userRouter.HandleFunc("/switcher", userHandler.GetSwitcher(userService, rightsService)).Methods(http.MethodGet)
 	userRouter.HandleFunc("/switcher/switch", userHandler.SwitchUser(userService, rightsService, r.CookieStore)).Methods(http.MethodGet)
+	//userRouter.HandleFunc("/rights/user", userHandler.GetAvailableRights(userService, rightsService, r.CookieStore)).Methods(http.MethodGet)
+
+	groupRouter := router.PathPrefix("/api/groups").Subrouter()
+	groupRouter.Use(r.loggingMiddleware1)
+	groupRouter.HandleFunc("", groupHandler.GetGroups(userService, rightsService)).Methods(http.MethodGet)
+	groupRouter.HandleFunc("", groupHandler.AddGroup(userService, rightsService)).Methods(http.MethodPut)
+	groupRouter.HandleFunc("", groupHandler.DeleteGroup(userService, rightsService)).Methods(http.MethodDelete)
+	groupRouter.HandleFunc("/rights", groupHandler.GetAvailableRights(userService, rightsService)).Methods(http.MethodGet)
 
 	router.HandleFunc("/sse/{folder}", sseService.SseHandler())
 	router.HandleFunc("/send/{event}/{client}", r.sendMessage())
