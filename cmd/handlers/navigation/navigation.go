@@ -11,7 +11,7 @@ type userProvider interface {
 }
 
 type navigationProvider interface {
-	Get(userId int) (*[]e.Navigation, error)
+	Get(userId int, navigationType string) (*[]e.Navigation, error)
 }
 
 func (s *Service) GetNavigation(userProvider userProvider, navigationProvider navigationProvider) http.HandlerFunc {
@@ -33,7 +33,7 @@ func (s *Service) GetNavigation(userProvider userProvider, navigationProvider na
 			return
 		}
 
-		navigationItems, err := navigationProvider.Get(userId)
+		navigationItems, err := navigationProvider.Get(userId, TypeNavigationLeft)
 		if err != nil {
 			log.Errorf("Error: %s", err.Error())
 
