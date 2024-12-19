@@ -14,6 +14,7 @@ Makefile
 rv2
 /cmd/migrations/1.sql
 /cmd/migrations/000001_tables.down.sql
+/cmd/migrations/000001_tables.up.sql
 backend.code-workspace
 main
 /vendor

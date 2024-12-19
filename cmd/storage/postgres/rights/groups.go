@@ -66,3 +66,24 @@ func (s *Service) GetUserGroupsWithName(userId int) ([]entitie.GroupNameAndIds, 
 	}
 	return group, nil
 }
+
+func (s *Service) GetUserGroupsRights(userId int) (int64, error) {
+	var out int64
+
+	query := "SELECT groups.group_rights_1 FROM user_groups, groups WHERE user_groups.user_id = $1 AND user_groups.group_id = groups.group_id"
+	rows, err := s.DB.Query(context.Background(), query, userId)
+	if err != nil {
+		s.Log.Errorf("DB error: %s", err.Error())
+		return out, err
+	}
+
+	for rows.Next() {
+		var i int64
+		if err := rows.Scan(&i); err != nil {
+			s.Log.Errorf("rights parse error: %s", err.Error())
+		} else {
+			out |= i
+		}
+	}
+	return out, nil
+}

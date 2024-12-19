@@ -83,7 +83,14 @@ func (s *Service) GetAvailableRights(userProvider userProvider, rightsProvider r
 			return
 		}
 
-		currentUserRightsWithDescriptions, err := rightsProvider.GetByUserRights(currentUser.Rights)
+		currentUserGroupsRights, err := rightsProvider.GetUserGroupsRights(currentUserId)
+		if err != nil {
+			s.Logger.Warning("Can't get user group rights: ", err.Error())
+			response.InternalServerError()
+			return
+		}
+
+		currentUserRightsWithDescriptions, err := rightsProvider.GetByUserRights(currentUser.Rights | currentUserGroupsRights)
 		if err != nil {
 			s.Logger.Warning("can't get user rights descrioptions: ", err.Error())
 			response.InternalServerError()
