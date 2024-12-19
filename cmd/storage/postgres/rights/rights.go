@@ -7,8 +7,13 @@ import (
 	"strconv"
 )
 
-func (s *Service) CheckUserRight(user *entitie.User, right int) bool {
-	if (user.Rights & right) == right {
+func (s *Service) CheckUserRight(user *entitie.User, right int64) bool {
+	groupsRights, err := s.GetUserGroupsRights(user.Id)
+	if err != nil {
+		return false
+	}
+
+	if ((user.Rights | groupsRights) & right) == right {
 		return true
 	}
 	return false
@@ -44,7 +49,7 @@ func (s *Service) GetRightsNamesByIds(ids []int) (*[]entitie.RightNameValue, err
 // GetByUserRights возвращает индексы, названия и значения прав пользователя.
 // Пользователям назначены права в таблице users в виде числа, данный метод вернет
 // указанные выше значения только для тех прав которые выставлены для пользователя
-func (s *Service) GetByUserRights(rightsValue int) (*[]entitie.Right, error) {
+func (s *Service) GetByUserRights(rightsValue int64) (*[]entitie.Right, error) {
 	query := "select * from rights_names where value & $1 > 0"
 
 	rows, err := s.DB.Query(context.Background(), query, rightsValue)

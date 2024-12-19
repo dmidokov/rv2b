@@ -6,7 +6,7 @@ type User struct {
 	UserName       string `json:"userName,omitempty"`
 	Password       string `json:"-"`
 	ActionCode     int    `json:"actionCode,omitempty"`
-	Rights         int    `json:"rights,omitempty"`
+	Rights         int64  `json:"rights,omitempty"`
 	CreateTime     int64  `json:"createTime,omitempty"`
 	UpdateTime     int64  `json:"updateTime,omitempty"`
 	Icon           string `json:"icon,omitempty"`
@@ -43,7 +43,7 @@ type UserInfoFull struct {
 	OrganizationId             int                  `json:"organizationId"`
 	OrganizationName           string               `json:"organizationName"`
 	MapRightNameToRightId      map[string]int       `json:"mapRightNameToRightId"`
-	UserRights                 []int                `json:"userRights"`
+	UserRights                 []int64              `json:"userRights"`
 	Icon                       string               `json:"icon"`
 	UserRightsWithDescriptions []Right              `json:"userRightsWithDesription"`
 	Password                   string               `json:"-"`

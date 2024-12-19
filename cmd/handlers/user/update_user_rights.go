@@ -11,13 +11,13 @@ import (
 )
 
 type UpdateUserRightsRequest struct {
-	UserId int  `json:"userId,omitempty"`
-	Value  int  `json:"value,omitempty"`
-	Set    bool `json:"set,omitempty"`
+	UserId int   `json:"userId,omitempty"`
+	Value  int64 `json:"value,omitempty"`
+	Set    bool  `json:"set,omitempty"`
 }
 
 type rightsSetter interface {
-	CheckUserRight(user *entitie.User, right int) bool
+	CheckUserRight(user *entitie.User, right int64) bool
 	AssignUserGroup(userId int, groupId int) error
 	UnassignUserGroup(userId int, groupId int) error
 }
@@ -172,9 +172,9 @@ func updateNavigation(
 	}
 
 	if request.Set {
-		_, err = navigationProvider.Set(userToUpdate.Id, request.Value, 1)
+		_, err = navigationProvider.Set(userToUpdate.Id, int(request.Value), 1)
 	} else {
-		err = navigationProvider.Delete(userToUpdate.Id, request.Value, 1)
+		err = navigationProvider.Delete(userToUpdate.Id, int(request.Value), 1)
 	}
 
 	if err != nil {

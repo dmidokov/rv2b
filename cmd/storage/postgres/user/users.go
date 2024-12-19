@@ -293,9 +293,10 @@ func (u *Service) GetInfo(userId int, infoLevel int) (*entitie.UserInfoFull, err
 			return nil, err
 		}
 
-		var userRightsList []int
+		var userRightsList []int64
+		var i int64
 
-		for i := 1; i <= user.Rights; i = i << 1 {
+		for i = 1; i <= user.Rights; i = i << 1 {
 			if (user.Rights & i) > 0 {
 				userRightsList = append(userRightsList, i)
 			}
